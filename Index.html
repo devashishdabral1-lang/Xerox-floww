@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Xerox Flow – Owner</title>
+<style>
+  :root {
+    --paper: #f6f1e7; --card: #fffdf8; --ink: #1d1b19; --muted: #7a726a; --line: #e4dccd;
+    --accent: #d8432b; --ok: #2f7d4f; --warn: #b7791f; color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #17150f; --card: #211e17; --ink: #f3ede2; --muted: #a39a8c; --line: #3a342a;
+      --accent: #ff6a50; --ok: #5cc286; --warn: #e0a84a; color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+  }
+  .hidden { display: none !important; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 20px 18px 48px; }
+  .shop { font: 700 26px/1.1 Georgia, "Times New Roman", serif; margin: 0; letter-spacing: -0.01em; }
+  .shop span { color: var(--accent); }
+  .sub { color: var(--muted); margin: 4px 0 0; font-size: 14px; }
+
+  .auth { max-width: 400px; margin: 0 auto; padding: 36px 18px 48px; }
+  .auth-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; margin-top: 22px; }
+  .authtabs { display: flex; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+  .authtab {
+    flex: 1; padding: 10px; background: none; border: 0; border-bottom: 3px solid transparent;
+    font: inherit; font-weight: 600; color: var(--muted); cursor: pointer;
+  }
+  .authtab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  .f { display: block; margin-top: 12px; font-size: 14px; color: var(--muted); }
+  .f input {
+    display: block; width: 100%; margin-top: 4px; padding: 12px; font: inherit; font-size: 16px;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink);
+  }
+  .pw { position: relative; display: block; }
+  .pw button {
+    position: absolute; right: 6px; bottom: 6px; padding: 6px 10px; border: 0; border-radius: 8px;
+    background: transparent; color: var(--accent); font: inherit; font-size: 14px; cursor: pointer;
+  }
+  .pw input { padding-right: 76px; }
+  .msg { font-size: 14px; min-height: 1.3em; margin: 12px 0 0; color: var(--accent); }
+  .msg.ok { color: var(--ok); }
+  .info { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
+
+  .btn {
+    width: 100%; padding: 13px; border: 0; border-radius: 10px; cursor: pointer;
+    background: var(--accent); color: #fff; font: 700 15px/1 system-ui, sans-serif;
+  }
+  .btn:disabled { opacity: .5; cursor: wait; }
+  .btn.ready { background: var(--ok); }
+  .btn.done { background: var(--ink); color: var(--card); }
+  .btn.main { margin-top: 16px; padding: 15px; font-size: 16px; }
+  .link { background: none; border: 0; padding: 4px; color: var(--accent); font: inherit; font-size: 14px; cursor: pointer; text-decoration: underline; }
+  input:focus-visible, button:focus-visible, summary:focus-visible, .tab:focus-visible, .search:focus-visible {
+    outline: 3px solid var(--accent); outline-offset: 2px;
+  }
+
+  .center { text-align: center; max-width: 440px; margin: 0 auto; padding: 60px 18px; }
+  .center h2 { font: 700 26px/1.2 Georgia, serif; margin: 0 0 8px; }
+  .center .btn { margin-top: 14px; }
+
+  header {
+    display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; justify-content: space-between;
+    border-bottom: 2px solid var(--ink); padding-bottom: 14px; margin-bottom: 16px;
+  }
+  .head-tools { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .switch { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+  .toggle { position: relative; width: 46px; height: 26px; flex: none; }
+  .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .toggle span { position: absolute; inset: 0; background: var(--line); border-radius: 999px; transition: background .2s; }
+  .toggle span::after {
+    content: ""; position: absolute; left: 3px; top: 3px; width: 20px; height: 20px;
+    background: #fff; border-radius: 50%; transition: transform .2s;
+  }
+  .toggle input:checked + span { background: var(--ok); }
+  .toggle input:checked + span::after { transform: translateX(20px); }
+  .toggle input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .logout {
+    padding: 8px 14px; border: 1px solid var(--ink); border-radius: 10px; background: transparent;
+    color: var(--ink); font: inherit; font-size: 14px; cursor: pointer;
+  }
+  .live { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .live::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--warn); }
+  .live.on::before { background: var(--ok); }
+
+  .banner {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between;
+    padding: 10px 14px; margin-bottom: 16px; border-radius: 12px; font-size: 14px;
+    background: var(--card); border: 1px solid var(--line);
+  }
+  .banner.low { border-color: var(--warn); }
+
+  details.rates { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; }
+  details.rates summary { cursor: pointer; font-weight: 600; }
+  .rategrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 8px; }
+  .rategrid .f { margin-top: 4px; }
+  .rategrid .btn { grid-column: 1 / -1; width: auto; justify-self: start; padding: 10px 18px; }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .stat small { color: var(--muted); font-size: 13px; }
+  .stat b { display: block; font: 700 26px/1.2 Georgia, serif; }
+
+  .bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 auto; }
+  .tab {
+    padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--card);
+    color: var(--ink); font: inherit; font-size: 14px; cursor: pointer;
+  }
+  .tab[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  .tab em { font-style: normal; opacity: .65; margin-left: 4px; }
+  .search {
+    flex: 0 1 200px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--card); color: var(--ink); font: inherit; font-size: 14px;
+  }
+
+  .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+  .order {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px;
+    border-left: 5px solid var(--line); display: flex; flex-direction: column; gap: 10px;
+  }
+  .order.received { border-left-color: var(--accent); }
+  .order.printing { border-left-color: var(--warn); }
+  .order.ready { border-left-color: var(--ok); }
+  .order.delivered { opacity: .7; }
+  .order.fresh { animation: pop .6s ease-out; }
+  @keyframes pop { from { transform: scale(.97); box-shadow: 0 0 0 4px var(--accent); } to { transform: scale(1); box-shadow: 0 0 0 0 transparent; } }
+  @media (prefers-reduced-motion: reduce) { .order.fresh { animation: none; } }
+  .top { display: flex; justify-content: space-between; align-items: baseline; }
+  .ticket { font: 700 30px/1 Georgia, serif; }
+  .time { color: var(--muted); font-size: 13px; }
+  .file { font-weight: 600; word-break: break-all; line-height: 1.3; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: 13px; padding: 3px 9px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
+  .meta { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: var(--muted); }
+  .amount { font: 700 20px/1 Georgia, serif; color: var(--ink); }
+  .done-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: var(--muted); }
+  .empty { text-align: center; color: var(--muted); padding: 40px 10px; border: 2px dashed var(--line); border-radius: 14px; grid-column: 1 / -1; }
+
+  .demo {
+    margin-top: 22px; padding: 14px; border: 1px dashed var(--line); border-radius: 12px;
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;
+    font-size: 14px; color: var(--muted);
+  }
+  .demo .btn { width: auto; padding: 10px 16px; background: var(--ink); color: var(--card); }
+
+  @media (max-width: 560px) {
+    .stat b { font-size: 22px; }
+    .search { flex: 1 1 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<main class="center" id="loadView"><p class="sub">Load ho raha hai...</p></main>
+
+<!-- Login / Signup -->
+<main class="auth hidden" id="authView">
+  <p class="shop">Xerox <span>Flow</span></p>
+  <p class="sub">Dukaan owner ke liye</p>
+  <div class="auth-card">
+    <div class="authtabs" role="tablist">
+      <button class="authtab" role="tab" id="tabLogin" aria-selected="true">Login</button>
+      <button class="authtab" role="tab" id="tabSignup" aria-selected="false">Naya account</button>
+    </div>
+
+    <form id="loginForm" novalidate>
+      <label class="f">Email
+        <input type="email" id="lEmail" autocomplete="username" inputmode="email" required>
+      </label>
+      <label class="f">Password
+        <span class="pw">
+          <input type="password" id="lPass" autocomplete="current-password" required>
+          <button type="button" class="showpw" data-for="lPass">Dikhao</button>
+        </span>
+      </label>
+      <p class="msg" id="lMsg" role="alert"></p>
+      <button class="btn main" type="submit" id="lBtn">Login karo</button>
+      <p class="info"><button type="button" class="link" id="forgot">Password bhool gaye?</button></p>
+    </form>
+
+    <form id="signupForm" class="hidden" novalidate>
+      <label class="f">Dukaan ka naam
+        <input type="text" id="sShop" autocomplete="organization" required>
+      </label>
+      <label class="f">Email
+        <input type="email" id="sEmail" autocomplete="username" inputmode="email" required>
+      </label>
+      <label class="f">Password (kam se kam 6 akshar)
+        <span class="pw">
+          <input type="password" id="sPass" autocomplete="new-password" required>
+          <button type="button" class="showpw" data-for="sPass">Dikhao</button>
+        </span>
+      </label>
+      <p class="msg" id="sMsg" role="alert"></p>
+      <button class="btn main" type="submit" id="sBtn">Account banao · 14 din free</button>
+    </form>
+  </div>
+</main>
+
+<!-- Naya password (reset link se aane par) -->
+<main class="auth hidden" id="recoverView">
+  <p class="shop">Naya <span>password</span></p>
+  <div class="auth-card">
+    <form id="recoverForm" novalidate>
+      <label class="f">Naya password (kam se kam 6 akshar)
+        <input type="password" id="rPass" autocomplete="new-password" required>
+      </label>
+      <p class="msg" id="rMsg" role="alert"></p>
+      <button class="btn main" type="submit">Password badlo</button>
+    </form>
+  </div>
+</main>
+
+<!-- Problem / Lock screens -->
+<main class="center hidden" id="problemView">
+  <h2 id="pTitle"></h2>
+  <p class="sub" id="pText"></p>
+  <button class="btn" id="pBtn">Logout</button>
+</main>
+
+<!-- Dashboard -->
+<div class="wrap hidden" id="appView">
+  <header>
+    <div>
+      <p class="shop" id="shopName"></p>
+      <p class="sub" id="shopMeta"></p>
+    </div>
+    <div class="head-tools">
+      <span class="live" id="live">Connecting...</span>
+      <label class="switch">
+        <span class="toggle"><input type="checkbox" id="sound" checked><span></span></span>
+        Awaaz
+      </label>
+      <button class="logout" id="logout">Logout</button>
+    </div>
+  </header>
+
+  <div class="banner hidden" id="trialBanner"><span id="trialText"></span></div>
+
+  <details class="rates">
+    <summary>Rates badlein (₹ per sheet)</summary>
+    <form id="rateForm" class="rategrid" novalidate>
+      <label class="f">B&W A4<input type="number" id="r_bw_a4" min="0" step="0.5"></label>
+      <label class="f">B&W A3<input type="number" id="r_bw_a3" min="0" step="0.5"></label>
+      <label class="f">Colour A4<input type="number" id="r_c_a4" min="0" step="0.5"></label>
+      <label class="f">Colour A3<input type="number" id="r_c_a3" min="0" step="0.5"></label>
+      <button class="btn" type="submit">Rates save karo</button>
+      <p class="msg" id="rateMsg" style="grid-column:1/-1;margin:0"></p>
+    </form>
+  </details>
+
+  <div class="stats" aria-live="polite">
+    <div class="stat"><small>Aaj ke orders</small><b id="stOrders">0</b></div>
+    <div class="stat"><small>Aaj ki kamai</small><b id="stMoney">₹0</b></div>
+    <div class="stat"><small>Baaki orders</small><b id="stPending">0</b></div>
+  </div>
+
+  <div class="bar">
+    <div class="tabs" id="tabs" role="group" aria-label="Order status"></div>
+    <input class="search" id="search" type="search" placeholder="Ticket no. ya file naam" aria-label="Search orders">
+  </div>
+
+  <div class="list" id="list"></div>
+
+  <div class="demo">
+    <span>Test: customer page abhi nahi bana, isliye yahan se test order bhejein.</span>
+    <button class="btn" id="addTest">+ Test order</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<script>
+/* ---------- Config (publishable key public hoti hai, ise yahan rakhna safe hai) ---------- */
+const SUPABASE_URL = 'https://iwzacblitkdzenmrugjj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_e5XcNyI8JFpzgMwBmE5XIg__BGgyjKM';
+
+const $ = id => document.getElementById(id);
+const VIEWS = ['loadView', 'authView', 'recoverView', 'problemView', 'appView'];
+function show(v) { VIEWS.forEach(id => $(id).classList.toggle('hidden', id !== v)); window.scrollTo(0, 0); }
+
+if (!window.supabase) {
+  $('loadView').innerHTML = '<h2>Load nahi hua</h2><p class="sub">Internet check karein aur page refresh karein.</p>';
+  throw new Error('supabase-js not loaded');
+}
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let user = null, shop = null, orders = [], channel = null;
+let filter = 'all', query = '', freshId = null;
+
+/* ---------- Auth UI ---------- */
+function switchTab(login) {
+  $('tabLogin').setAttribute('aria-selected', login);
+  $('tabSignup').setAttribute('aria-selected', !login);
+  $('loginForm').classList.toggle('hidden', !login);
+  $('signupForm').classList.toggle('hidden', login);
+}
+$('tabLogin').addEventListener('click', () => switchTab(true));
+$('tabSignup').addEventListener('click', () => switchTab(false));
+document.querySelectorAll('.showpw').forEach(b => b.addEventListener('click', () => {
+  const i = $(b.dataset.for), hide = i.type === 'password';
+  i.type = hide ? 'text' : 'password';
+  b.textContent = hide ? 'Chhupao' : 'Dikhao';
+}));
+
+const validEmail = e => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
+function setMsg(el, text, ok) { el.textContent = text; el.classList.toggle('ok', !!ok); }
+
+function friendly(err) {
+  const m = (err && err.message) || String(err);
+  if (/invalid login/i.test(m)) return 'Email ya password galat hai.';
+  if (/already registered|already been registered/i.test(m)) return 'Is email se account pehle se hai. Login karein.';
+  if (/not confirmed/i.test(m)) return 'Email confirm nahi hua. Inbox check karein.';
+  if (/rate limit|too many/i.test(m)) return 'Bahut zyada koshish. Thodi der baad try karein.';
+  if (/fetch|network/i.test(m)) return 'Internet ki dikkat. Dobara try karein.';
+  return m;
+}
+
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  setMsg($('lMsg'), '');
+  const email = $('lEmail').value.trim().toLowerCase(), pw = $('lPass').value;
+  if (!validEmail(email) || !pw) return setMsg($('lMsg'), 'Email aur password dono bharein.');
+  $('lBtn').disabled = true;
+  const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+  $('lBtn').disabled = false;
+  if (error) setMsg($('lMsg'), friendly(error));
+});
+
+$('signupForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  setMsg($('sMsg'), '');
+  const shopName = $('sShop').value.trim(), email = $('sEmail').value.trim().toLowerCase(), pw = $('sPass').value;
+  if (!shopName) return setMsg($('sMsg'), 'Dukaan ka naam likhein.');
+  if (!validEmail(email)) return setMsg($('sMsg'), 'Sahi email likhein.');
+  if (pw.length < 6) return setMsg($('sMsg'), 'Password kam se kam 6 akshar ka rakhein.');
+  $('sBtn').disabled = true;
+  const { data, error } = await sb.auth.signUp({ email, password: pw, options: { data: { shop_name: shopName } } });
+  $('sBtn').disabled = false;
+  if (error) return setMsg($('sMsg'), friendly(error));
+  if (!data.session) setMsg($('sMsg'), 'Account ban gaya. Email confirm karne ka link inbox mein bheja hai.', true);
+  // session mili to onAuthStateChange apne aap dashboard khol dega
+});
+
+$('forgot').addEventListener('click', async () => {
+  const email = $('lEmail').value.trim().toLowerCase();
+  if (!validEmail(email)) return setMsg($('lMsg'), 'Upar email likhein, phir "Password bhool gaye" dabayein.');
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.href.split('#')[0] });
+  if (error) setMsg($('lMsg'), friendly(error));
+  else setMsg($('lMsg'), 'Agar ye email registered hai, to reset link bhej diya gaya hai.', true);
+});
+
+$('recoverForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const pw = $('rPass').value;
+  if (pw.length < 6) return setMsg($('rMsg'), 'Password kam se kam 6 akshar ka rakhein.');
+  const { error } = await sb.auth.updateUser({ password: pw });
+  if (error) return setMsg($('rMsg'), friendly(error));
+  $('rPass').value = '';
+  start(user || (await sb.auth.getUser()).data.user);
+});
+
+async function doLogout() { await sb.auth.signOut(); }
+$('logout').addEventListener('click', doLogout);
+$('pBtn').addEventListener('click', doLogout);
+
+/* ---------- Session handling ---------- */
+sb.auth.onAuthStateChange((event, session) => {
+  // callback ke andar seedha Supabase call mat karo, isliye setTimeout
+  setTimeout(() => {
+    if (event === 'PASSWORD_RECOVERY') { user = session && session.user; return show('recoverView'); }
+    if (session && session.user) {
+      if (user && user.id === session.user.id && shop) return;   // pehle se chal raha hai
+      start(session.user);
+    } else {
+      stopLive(); user = null; shop = null; orders = [];
+      ['lEmail', 'lPass', 'sShop', 'sEmail', 'sPass'].forEach(id => $(id).value = '');
+      setMsg($('lMsg'), ''); setMsg($('sMsg'), '');
+      show('authView');
+    }
+  }, 0);
+});
+
+function problem(title, text, btn) {
+  $('pTitle').textContent = title; $('pText').textContent = text; $('pBtn').textContent = btn || 'Logout';
+  show('problemView');
+}
+
+async function start(u) {
+  user = u;
+  show('loadView');
+  const { data, error } = await sb.from('shops').select('*').eq('owner_id', u.id).maybeSingle();
+  if (error) return problem('Dukaan load nahi hui', error.message);
+  if (!data) return problem('Dukaan nahi mili',
+    'Account ban gaya lekin dukaan ka record nahi bana. Supabase mein "handle_new_user" SQL (Kaam 2) chalayi thi? Chalane ke baad naya account banayein.');
+  shop = data;
+
+  const trialLeft = Math.ceil((new Date(shop.trial_ends_at) - Date.now()) / 86400000);
+  if (shop.status === 'paused' || (shop.status === 'trial' && trialLeft <= 0)) {
+    return problem('Free trial khatam ho gaya',
+      'Customers ab order nahi de payenge. Dashboard chalu karne ke liye subscription lein.');
+  }
+
+  $('shopName').textContent = shop.name;
+  $('shopMeta').textContent = `Dukaan code: ${shop.slug} · ${u.email}`;
+  const b = $('trialBanner');
+  if (shop.status === 'trial') {
+    b.classList.remove('hidden');
+    b.classList.toggle('low', trialLeft <= 3);
+    $('trialText').textContent = `Free trial: ${trialLeft} din baaki`;
+  } else b.classList.add('hidden');
+  fillRates();
+  filter = 'all'; query = ''; $('search').value = '';
+  await loadOrders();
+  startLive();
+  show('appView');
+}
+
+/* ---------- Rates ---------- */
+function fillRates() {
+  $('r_bw_a4').value = shop.rate_bw_a4; $('r_bw_a3').value = shop.rate_bw_a3;
+  $('r_c_a4').value = shop.rate_color_a4; $('r_c_a3').value = shop.rate_color_a3;
+}
+$('rateForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const v = id => Number($(id).value);
+  const rates = { rate_bw_a4: v('r_bw_a4'), rate_bw_a3: v('r_bw_a3'), rate_color_a4: v('r_c_a4'), rate_color_a3: v('r_c_a3') };
+  if (Object.values(rates).some(x => !isFinite(x) || x < 0)) return setMsg($('rateMsg'), 'Sahi rates likhein.');
+  const { error } = await sb.from('shops').update(rates).eq('id', shop.id);
+  if (error) return setMsg($('rateMsg'), friendly(error));
+  Object.assign(shop, rates);
+  setMsg($('rateMsg'), 'Rates save ho gaye.', true);
+});
+
+/* ---------- Orders + live ---------- */
+async function loadOrders() {
+  const { data, error } = await sb.from('orders').select('*').eq('shop_id', shop.id)
+    .order('created_at', { ascending: false }).limit(300);
+  if (error) { orders = []; $('list').innerHTML = `<div class="empty">Orders load nahi hue: ${esc(error.message)}</div>`; return; }
+  orders = data; render();
+}
+
+function upsert(row) {
+  const i = orders.findIndex(o => o.id === row.id);
+  if (i >= 0) orders[i] = row; else orders.unshift(row);
+  orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+}
+
+function beep() {
+  if (!$('sound').checked) return;
+  try {
+    const c = new (window.AudioContext || window.webkitAudioContext)();
+    const o = c.createOscillator(), g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.frequency.value = 880; g.gain.value = 0.1;
+    o.start(); o.stop(c.currentTime + 0.25);
+  } catch (e) {}
+}
+
+function startLive() {
+  stopLive();
+  channel = sb.channel('orders-' + shop.id)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `shop_id=eq.${shop.id}` }, p => {
+      if (p.eventType === 'DELETE') orders = orders.filter(o => o.id !== p.old.id);
+      else {
+        upsert(p.new);
+        if (p.eventType === 'INSERT') { freshId = p.new.id; beep(); }
+      }
+      render();
+    })
+    .subscribe(status => {
+      const el = $('live'), on = status === 'SUBSCRIBED';
+      el.classList.toggle('on', on);
+      el.textContent = on ? 'Live' : 'Reconnecting...';
+    });
+}
+function stopLive() { if (channel) { sb.removeChannel(channel); channel = null; } }
+
+const NEXT = { received: 'printing', printing: 'ready', ready: 'delivered' };
+async function setStatus(id, status) {
+  const o = orders.find(x => x.id === id); if (!o) return;
+  const old = o.status;
+  o.status = status; freshId = null; render();           // turant dikhao
+  const { error } = await sb.from('orders').update({ status }).eq('id', id);
+  if (error) { o.status = old; render(); alert('Status badal nahi paya: ' + friendly(error)); }
+}
+
+$('addTest').addEventListener('click', async () => {
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const colour = Math.random() < 0.2 ? 'color' : 'bw', paper = Math.random() < 0.1 ? 'A3' : 'A4';
+  const pps = pick([1, 1, 1, 2, 4]), dbl = Math.random() < 0.5, copies = pick([1, 1, 2, 3]);
+  const pages = Math.floor(Math.random() * 28) + 1;
+  const sides = Math.ceil(pages / pps), sheets = dbl ? Math.ceil(sides / 2) : sides;
+  const rate = colour === 'bw' ? (paper === 'A4' ? shop.rate_bw_a4 : shop.rate_bw_a3) : (paper === 'A4' ? shop.rate_color_a4 : shop.rate_color_a3);
+  const { error } = await sb.from('orders').insert({
+    shop_id: shop.id,
+    file_name: pick(['assignment.pdf', 'Notes_Unit3.pdf', 'Resume_Rahul.pdf', 'Fee_receipt.png', 'Project_Report.pdf']),
+    pages, sheets, colour, paper, pages_per_sheet: pps, double_sided: dbl, copies, amount: sheets * rate * copies
+  });
+  if (error) alert('Test order nahi gaya: ' + friendly(error));
+});
+
+/* ---------- Render ---------- */
+const STATUS = ['received', 'printing', 'ready', 'delivered'];
+const LABEL = { received: 'Naye', printing: 'Printing', ready: 'Ready', delivered: 'Delivered' };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(3, '0');
+const fmtTime = iso => new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+function renderStats() {
+  const today = new Date().toDateString();
+  const t = orders.filter(o => new Date(o.created_at).toDateString() === today);
+  $('stOrders').textContent = t.length;
+  $('stMoney').textContent = '₹' + t.reduce((s, o) => s + Number(o.amount), 0);
+  $('stPending').textContent = orders.filter(o => o.status !== 'delivered').length;
+}
+function renderTabs() {
+  const tabs = STATUS.map(s => `<button class="tab" data-f="${s}" aria-pressed="${filter === s}">${LABEL[s]}<em>${orders.filter(o => o.status === s).length}</em></button>`);
+  tabs.push(`<button class="tab" data-f="all" aria-pressed="${filter === 'all'}">Sab<em>${orders.length}</em></button>`);
+  $('tabs').innerHTML = tabs.join('');
+  $('tabs').querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => { filter = b.dataset.f; render(); }));
+}
+function actionHTML(o) {
+  if (o.status === 'received') return `<button class="btn" data-a="next" data-id="${o.id}">Print shuru karo</button>`;
+  if (o.status === 'printing') return `<button class="btn ready" data-a="next" data-id="${o.id}">Print ho gaya · Ready</button>`;
+  if (o.status === 'ready')    return `<button class="btn done" data-a="next" data-id="${o.id}">Customer ko de diya</button>`;
+  return `<div class="done-row"><span>Delivered ✓</span><button class="link" data-a="undo" data-id="${o.id}">Wapas Ready karo</button></div>`;
+}
+function renderList() {
+  const q = query.trim().toLowerCase().replace('#', '');
+  let items = orders.filter(o => filter === 'all' || o.status === filter);
+  if (q) items = orders.filter(o => String(o.ticket_no).includes(q) || o.file_name.toLowerCase().includes(q));
+  const list = $('list');
+  if (!items.length) {
+    list.innerHTML = `<div class="empty">${q ? 'Is search se koi order nahi mila.' : orders.length ? 'Is section mein abhi koi order nahi hai.' : 'Abhi koi order nahi aaya. Neeche "+ Test order" se test karein.'}</div>`;
+    return;
+  }
+  list.innerHTML = items.map(o => {
+    const chips = [o.colour === 'bw' ? 'B&W' : 'Colour', o.paper, o.double_sided ? 'Double side' : 'Single side',
+      o.pages_per_sheet > 1 ? `${o.pages_per_sheet} pages/sheet` : null, `${o.copies} ${o.copies > 1 ? 'copies' : 'copy'}`]
+      .filter(Boolean).map(c => `<span class="chip">${c}</span>`).join('');
+    return `
+      <article class="order ${o.status}${o.id === freshId ? ' fresh' : ''}">
+        <div class="top"><span class="ticket">#${pad(o.ticket_no)}</span><span class="time">${fmtTime(o.created_at)}</span></div>
+        <div class="file">${esc(o.file_name)}</div>
+        <div class="chips">${chips}</div>
+        <div class="meta"><span>${o.pages} pages · ${o.sheets} sheets</span><span class="amount">₹${Number(o.amount)}</span></div>
+        ${actionHTML(o)}
+      </article>`;
+  }).join('');
+  list.querySelectorAll('[data-a]').forEach(b => b.addEventListener('click', () => {
+    const id = b.dataset.id, o = orders.find(x => x.id === id);
+    if (!o) return;
+    setStatus(id, b.dataset.a === 'undo' ? 'ready' : NEXT[o.status]);
+  }));
+}
+function render() { renderStats(); renderTabs(); renderList(); }
+$('search').addEventListener('input', e => { query = e.target.value; renderList(); });
+
+/* ---------- Start ---------- */
+(async () => {
+  const { data } = await sb.auth.getSession();
+  if (!data.session) show('authView');   // session ho to onAuthStateChange start() chala dega
+})();
+</script>
+</body>
+</html>

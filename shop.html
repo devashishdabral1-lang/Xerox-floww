@@ -123,10 +123,11 @@ let shop = null, file = null, pages = 0, orderId = null, timer = null;
 const st = { colour: 'bw', paper: 'A4', pps: 1, copies: 1, dbl: false };
 
 const store = {
-  get() { try { return JSON.parse(localStorage.getItem('xf_last_order')); } catch (e) { return null; } },
-  set(v) { try { localStorage.setItem('xf_last_order', JSON.stringify(v)); } catch (e) {} },
-  clear() { try { localStorage.removeItem('xf_last_order'); } catch (e) {} }
+  get() { try { return JSON.parse(sessionStorage.getItem('xf_ticket')); } catch (e) { return null; } },
+  set(v) { try { sessionStorage.setItem('xf_ticket', JSON.stringify(v)); } catch (e) {} },
+  clear() { try { sessionStorage.removeItem('xf_ticket'); } catch (e) {} }
 };
+try { localStorage.removeItem('xf_last_order'); } catch (e) {}   // purana data hatao
 
 function slugFromUrl() {
   const m = location.pathname.match(/\/s\/([^\/]+)/);
@@ -244,8 +245,11 @@ $('newBtn').addEventListener('click', backToOrder);
   document.title = shop.name + ' – Print order';
   if (!shop.is_open) return fail('Abhi order band hai', 'Ye dukaan abhi online order nahi le rahi. Counter par baat karein.');
   update();
+  const nav = (performance.getEntriesByType('navigation')[0] || {}).type;
   const last = store.get();
-  if (last && last.slug === slug) openTicket(last.id); else show('orderView');
+  const restore = last && last.slug === slug && (nav === 'reload' || nav === 'back_forward');
+  if (restore) openTicket(last.id);
+  else { store.clear(); show('orderView'); }
 })();
 </script>
 </body>

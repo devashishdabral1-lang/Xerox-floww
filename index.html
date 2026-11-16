@@ -226,7 +226,8 @@
 <main class="center hidden" id="problemView">
   <h2 id="pTitle"></h2>
   <p class="sub" id="pText"></p>
-  <button class="btn" id="pBtn">Logout</button>
+  <div id="pPay" style="margin-top:16px;text-align:left"></div>
+  <button class="btn" id="pBtn" style="margin-top:14px">Logout</button>
 </main>
 
 <!-- Dashboard -->
@@ -247,6 +248,8 @@
   </header>
 
   <div class="banner hidden" id="trialBanner"><span id="trialText"></span></div>
+
+  <details class="rates"><summary>Subscription aur payment</summary><div id="planPay" style="padding:10px 0"></div></details>
 
   <details class="rates">
     <summary>Rates badlein (₹ per sheet)</summary>
@@ -402,6 +405,7 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 function problem(title, text, btn) {
+  $('pPay').innerHTML = '';
   $('pTitle').textContent = title; $('pText').textContent = text; $('pBtn').textContent = btn || 'Logout';
   show('problemView');
 }
@@ -415,20 +419,27 @@ async function start(u) {
     'Account ban gaya lekin dukaan ka record nahi bana. Supabase mein "handle_new_user" SQL (Kaam 2) chalayi thi? Chalane ke baad naya account banayein.');
   shop = data;
 
-  const trialLeft = Math.ceil((new Date(shop.trial_ends_at) - Date.now()) / 86400000);
-  if (shop.status === 'paused' || (shop.status === 'trial' && trialLeft <= 0)) {
-    return problem('Free trial khatam ho gaya',
-      'Customers ab order nahi de payenge. Dashboard chalu karne ke liye subscription lein.');
+  await loadSettings();
+  const DAY = 86400000;
+  const trialLeft = Math.ceil((new Date(shop.trial_ends_at) - Date.now()) / DAY);
+  const paidLeft = shop.paid_until ? Math.ceil((new Date(shop.paid_until) - Date.now()) / DAY) : 0;
+  if (shop.status === 'paused' || (paidLeft <= 0 && trialLeft <= 0)) {
+    problem(shop.status === 'paused' ? 'Dukaan pause hai' : 'Subscription khatam ho gaya',
+      'Customers ab order nahi de payenge. Dobara chalu karne ke liye subscription lein.');
+    $('pPay').innerHTML = payHTML();
+    return;
   }
 
   $('shopName').textContent = shop.name;
   $('shopMeta').textContent = `Dukaan code: ${shop.slug} · ${u.email}`;
   const b = $('trialBanner');
-  if (shop.status === 'trial') {
-    b.classList.remove('hidden');
-    b.classList.toggle('low', trialLeft <= 3);
-    $('trialText').textContent = `Free trial: ${trialLeft} din baaki`;
-  } else b.classList.add('hidden');
+  const daysLeft = paidLeft > 0 ? paidLeft : trialLeft;
+  b.classList.remove('hidden');
+  b.classList.toggle('low', daysLeft <= 5);
+  $('trialText').textContent = paidLeft > 0
+    ? `Subscription chalu: ${paidLeft} din baaki (${fmtDate(shop.paid_until)} tak)`
+    : `Free trial: ${trialLeft} din baaki`;
+  $('planPay').innerHTML = payHTML();
   fillRates();
   buildQR();
   filter = 'all'; query = ''; $('search').value = '';
@@ -436,6 +447,32 @@ async function start(u) {
   startLive();
   startPoll();
   show('appView');
+}
+
+/* ---------- Subscription / payment info ---------- */
+let cfg = { monthly_price: '499', upi_id: '', whatsapp: '' };
+const fmtDate = iso => new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+async function loadSettings() {
+  const { data } = await sb.from('app_settings').select('*');
+  (data || []).forEach(r => { cfg[r.key] = r.value; });
+}
+function payHTML() {
+  const price = cfg.monthly_price || '499';
+  const btnCss = 'display:block;text-align:center;text-decoration:none;margin-top:10px;padding:13px;border-radius:10px;font-weight:700;color:#fff;';
+  let h = `<p style="margin:0"><strong>₹${esc(price)} / mahina</strong> · unlimited orders</p>`;
+  if (cfg.upi_id) {
+    const url = `upi://pay?pa=${encodeURIComponent(cfg.upi_id)}&amp;pn=${encodeURIComponent('Xerox Flow')}&amp;am=${encodeURIComponent(price)}&amp;cu=INR&amp;tn=${encodeURIComponent('Xerox Flow ' + shop.slug)}`;
+    h += `<p class="sub">UPI ID: <strong>${esc(cfg.upi_id)}</strong></p>`;
+    h += `<a href="${url}" style="${btnCss}background:var(--accent)">UPI se ₹${esc(price)} pay karo</a>`;
+  }
+  const wa = String(cfg.whatsapp || '').replace(/\D/g, '');
+  if (wa) {
+    const text = encodeURIComponent(`Payment kar diya. Dukaan: ${shop.name} (${shop.slug})`);
+    h += `<a href="https://wa.me/${wa}?text=${text}" style="${btnCss}background:var(--ink)">Payment screenshot WhatsApp par bhejo</a>`;
+  }
+  if (!cfg.upi_id && !wa) h += '<p class="sub">Payment ki details abhi set nahi hui. Admin se sampark karein.</p>';
+  h += '<p class="sub">Payment verify hote hi subscription chalu kar diya jayega.</p>';
+  return h;
 }
 
 /* ---------- Customer link + QR ---------- */

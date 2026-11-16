@@ -260,6 +260,15 @@
     </form>
   </details>
 
+  <details class="rates">
+    <summary>Customer QR aur link</summary>
+    <div style="text-align:center;padding:12px 0">
+      <div id="qr" style="display:inline-block;background:#fff;padding:10px;border-radius:8px"></div>
+      <p class="sub" id="custLink" style="word-break:break-all"></p>
+      <button class="btn" id="copyLink" style="width:auto;padding:10px 18px">Link copy karo</button>
+    </div>
+  </details>
+
   <div class="stats" aria-live="polite">
     <div class="stat"><small>Aaj ke orders</small><b id="stOrders">0</b></div>
     <div class="stat"><small>Aaj ki kamai</small><b id="stMoney">₹0</b></div>
@@ -280,6 +289,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 /* ---------- Config (publishable key public hoti hai, ise yahan rakhna safe hai) ---------- */
 const SUPABASE_URL = 'https://iwzacblitkdzenmrugjj.supabase.co';
@@ -420,11 +430,29 @@ async function start(u) {
     $('trialText').textContent = `Free trial: ${trialLeft} din baaki`;
   } else b.classList.add('hidden');
   fillRates();
+  buildQR();
   filter = 'all'; query = ''; $('search').value = '';
   await loadOrders();
   startLive();
   startPoll();
   show('appView');
+}
+
+/* ---------- Customer link + QR ---------- */
+const custUrl = () => location.origin + '/s/' + shop.slug;
+function buildQR() {
+  $('custLink').textContent = custUrl();
+  const q = $('qr'); q.innerHTML = '';
+  if (window.QRCode) new QRCode(q, { text: custUrl(), width: 200, height: 200 });
+}
+$('copyLink').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(custUrl()); $('copyLink').textContent = 'Copy ho gaya'; } catch (e) {}
+});
+async function openFile(o) {
+  const w = window.open('about:blank', '_blank');
+  const { data, error } = await sb.storage.from('print-files').createSignedUrl(o.file_path, 120);
+  if (error || !data) { if (w) w.close(); return alert('File nahi khuli: ' + friendly(error || { message: 'unknown' })); }
+  if (w) w.location.href = data.signedUrl; else location.href = data.signedUrl;
 }
 
 /* ---------- Rates ---------- */
@@ -582,6 +610,7 @@ function renderList() {
         <div class="file">${esc(o.file_name)}</div>
         <div class="chips">${chips}</div>
         <div class="meta"><span>${o.pages} pages · ${o.sheets} sheets</span><span class="amount">₹${Number(o.amount)}</span></div>
+        ${o.file_path ? `<button class="link" data-a="file" data-id="${o.id}" style="align-self:flex-start">File kholo ↗</button>` : ''}
         ${actionHTML(o)}
       </article>`;
   }).join('');
@@ -589,6 +618,7 @@ function renderList() {
   list.querySelectorAll('[data-a]').forEach(b => b.addEventListener('click', () => {
     const id = b.dataset.id, o = orders.find(x => x.id === id);
     if (!o) return;
+    if (b.dataset.a === 'file') return openFile(o);
     setStatus(id, b.dataset.a === 'undo' ? 'ready' : NEXT[o.status]);
   }));
 }

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Print order</title>
+<style>
+:root{--paper:#f6f1e7;--card:#fffdf8;--ink:#1d1b19;--muted:#7a726a;--line:#e4dccd;--accent:#d8432b;--ok:#2f7d4f;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--paper:#17150f;--card:#211e17;--ink:#f3ede2;--muted:#a39a8c;--line:#3a342a;--accent:#ff6a50;--ok:#5cc286;color-scheme:dark}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+.wrap{max-width:480px;margin:0 auto;padding:20px 18px 40px}
+h1{font:700 26px/1.1 Georgia,serif;margin:0;letter-spacing:-.01em}
+h2{font:600 18px/1.3 Georgia,serif;margin:0 0 12px}
+.sub{color:var(--muted);margin:4px 0 0;font-size:14px}
+header{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+.hidden{display:none!important}
+.drop{display:block;text-align:center;padding:24px 14px;border:2px dashed var(--line);border-radius:12px;cursor:pointer;color:var(--muted)}
+.drop input{position:absolute;width:1px;height:1px;opacity:0}
+.drop:focus-within,.drop:hover{border-color:var(--accent);color:var(--ink)}
+.fname{margin-top:8px;font-weight:600;word-break:break-all;color:var(--ink)}
+.lbl{display:block;margin-top:14px;font-size:14px;color:var(--muted)}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.opt{flex:1 1 auto;min-width:64px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);font:inherit;cursor:pointer}
+.opt[aria-pressed=true]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.row{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:10px}
+.num{width:84px;padding:8px;font:inherit;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);text-align:center}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:18px/1 inherit;cursor:pointer}
+.toggle{position:relative;width:48px;height:28px;flex:none}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle span{position:absolute;inset:0;background:var(--line);border-radius:999px;transition:background .2s}
+.toggle span::after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;background:#fff;border-radius:50%;transition:transform .2s}
+.toggle input:checked+span{background:var(--ok)}
+.toggle input:checked+span::after{transform:translateX(20px)}
+.bill{border-top:1px dashed var(--line);margin-top:16px;padding-top:14px}
+.bill p{display:flex;justify-content:space-between;margin:4px 0;color:var(--muted);font-size:14px}
+.bill .total{color:var(--ink);font-size:18px;font-weight:700}
+.btn{width:100%;margin-top:16px;padding:15px;border:0;border-radius:12px;cursor:pointer;background:var(--accent);color:#fff;font:700 17px/1 system-ui,sans-serif}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.alt{background:var(--ink);color:var(--card)}
+.msg{color:var(--accent);font-size:14px;min-height:1.3em;margin:10px 0 0}
+.note{font-size:13px;color:var(--muted);margin:10px 0 0;text-align:center}
+.center{text-align:center;padding:50px 10px}
+.tno{font:700 64px/1 Georgia,serif;color:var(--accent);margin:8px 0}
+.steps{display:flex;margin-top:18px;font-size:13px;color:var(--muted)}
+.steps div{flex:1;text-align:center}
+.steps div::before{content:"";display:block;width:12px;height:12px;border-radius:50%;margin:0 auto 6px;background:var(--line)}
+.steps .done{color:var(--ink)}.steps .done::before{background:var(--ok)}
+.steps .now{color:var(--accent);font-weight:600}.steps .now::before{background:var(--accent)}
+input:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1 id="shopName">Print order</h1><p class="sub">File upload karo, counter par sirf ticket dikhao</p></header>
+
+  <div id="loadView" class="center"><p class="sub">Load ho raha hai...</p></div>
+
+  <div id="errView" class="center hidden"><h2 id="errT"></h2><p class="sub" id="errP"></p></div>
+
+  <div id="orderView" class="hidden">
+    <section>
+      <h2>1. File chuno</h2>
+      <label class="drop">
+        <input type="file" id="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+        Tap karke PDF, JPG ya PNG chuno<br><small>Max 30 MB</small>
+        <div class="fname" id="fname"></div>
+      </label>
+      <div class="row"><span id="pgLabel">Total pages</span><input class="num" id="pages" type="number" min="1" max="1000" value="1" inputmode="numeric" readonly></div>
+    </section>
+
+    <section>
+      <h2>2. Print settings</h2>
+      <span class="lbl" style="margin-top:0">Colour</span>
+      <div class="opts"><button class="opt" data-g="colour" data-v="bw" aria-pressed="true">Black & White</button><button class="opt" data-g="colour" data-v="color" aria-pressed="false">Colour</button></div>
+      <span class="lbl">Paper size</span>
+      <div class="opts"><button class="opt" data-g="paper" data-v="A4" aria-pressed="true">A4</button><button class="opt" data-g="paper" data-v="A3" aria-pressed="false">A3</button></div>
+      <span class="lbl">Pages per sheet</span>
+      <div class="opts"><button class="opt" data-g="pps" data-v="1" aria-pressed="true">1</button><button class="opt" data-g="pps" data-v="2" aria-pressed="false">2</button><button class="opt" data-g="pps" data-v="4" aria-pressed="false">4</button></div>
+      <div class="row"><div><strong>Double side</strong><div class="sub" style="margin:0">Dono taraf print</div></div>
+        <label class="toggle"><input type="checkbox" id="dbl" aria-label="Double side"><span></span></label></div>
+      <div class="row"><strong>Copies</strong>
+        <div class="stepper"><button id="minus" aria-label="Kam karo">−</button><strong id="copies" style="min-width:24px;text-align:center">1</strong><button id="plus" aria-label="Badhao">+</button></div></div>
+      <div class="bill" aria-live="polite">
+        <p><span>Sheets</span><span id="sheets">0</span></p>
+        <p><span>Rate</span><span id="rate">-</span></p>
+        <p class="total"><span>Total</span><span id="total">₹0</span></p>
+      </div>
+    </section>
+
+    <button class="btn" id="payBtn" disabled>Order bhejo</button>
+    <p class="msg" id="msg" role="alert"></p>
+    <p class="note">Payment counter par karein (cash ya UPI). Order ke baad ticket number milega.</p>
+  </div>
+
+  <div id="ticketView" class="hidden">
+    <section class="center" style="padding:24px 10px">
+      <p class="sub" style="margin:0">Aapka ticket number</p>
+      <div class="tno" id="tno">#---</div>
+      <p style="margin:0">Counter par <strong id="tamt">₹0</strong> dein</p>
+      <p class="sub" id="tstate"></p>
+      <div class="steps" id="steps"><div>Received</div><div>Printing</div><div>Ready</div></div>
+    </section>
+    <button class="btn alt" id="newBtn">Naya order karein</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://iwzacblitkdzenmrugjj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_e5XcNyI8JFpzgMwBmE5XIg__BGgyjKM';
+const $ = id => document.getElementById(id);
+const VIEWS = ['loadView', 'errView', 'orderView', 'ticketView'];
+const show = v => VIEWS.forEach(x => $(x).classList.toggle('hidden', x !== v));
+function fail(t, p) { $('errT').textContent = t; $('errP').textContent = p; show('errView'); }
+if (!window.supabase) { fail('Load nahi hua', 'Internet check karein aur page refresh karein.'); throw new Error('no supabase'); }
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+
+let shop = null, file = null, pages = 0, orderId = null, timer = null;
+const st = { colour: 'bw', paper: 'A4', pps: 1, copies: 1, dbl: false };
+
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem('xf_last_order')); } catch (e) { return null; } },
+  set(v) { try { localStorage.setItem('xf_last_order', JSON.stringify(v)); } catch (e) {} },
+  clear() { try { localStorage.removeItem('xf_last_order'); } catch (e) {} }
+};
+
+function slugFromUrl() {
+  const m = location.pathname.match(/\/s\/([^\/]+)/);
+  return m ? decodeURIComponent(m[1]) : new URLSearchParams(location.search).get('s');
+}
+
+/* ---------- Bill ---------- */
+function calc() {
+  const sides = Math.ceil(pages / st.pps);
+  const sheets = st.dbl ? Math.ceil(sides / 2) : sides;
+  const rate = Number(shop[(st.colour === 'bw' ? 'rate_bw_' : 'rate_color_') + st.paper.toLowerCase()]);
+  return { sheets, rate, total: sheets * rate * st.copies };
+}
+function update() {
+  const c = calc();
+  $('copies').textContent = st.copies;
+  $('sheets').textContent = c.sheets;
+  $('rate').textContent = '₹' + c.rate + ' / sheet';
+  $('total').textContent = '₹' + c.total;
+  $('payBtn').disabled = !(file && pages > 0);
+}
+document.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll(`.opt[data-g="${b.dataset.g}"]`).forEach(x => x.setAttribute('aria-pressed', 'false'));
+  b.setAttribute('aria-pressed', 'true');
+  const g = b.dataset.g, v = b.dataset.v;
+  st[g] = g === 'pps' ? Number(v) : v;
+  update();
+}));
+$('dbl').addEventListener('change', e => { st.dbl = e.target.checked; update(); });
+$('minus').addEventListener('click', () => { st.copies = Math.max(1, st.copies - 1); update(); });
+$('plus').addEventListener('click', () => { st.copies = Math.min(50, st.copies + 1); update(); });
+$('pages').addEventListener('input', e => { pages = Math.max(0, Math.min(1000, parseInt(e.target.value, 10) || 0)); update(); });
+
+/* ---------- File + page count ---------- */
+async function countPages(f) {
+  if (f.type.startsWith('image/')) return 1;
+  try {
+    const doc = await PDFLib.PDFDocument.load(await f.arrayBuffer(), { ignoreEncryption: true, updateMetadata: false });
+    return doc.getPageCount();
+  } catch (e) { return 0; }
+}
+$('file').addEventListener('change', async e => {
+  const f = e.target.files[0];
+  file = null; pages = 0; $('fname').textContent = ''; $('msg').textContent = '';
+  if (!f) return update();
+  const okType = /^(application\/pdf|image\/jpeg|image\/png)$/.test(f.type);
+  if (!okType) { $('msg').textContent = 'Sirf PDF, JPG ya PNG file chalegi.'; e.target.value = ''; return update(); }
+  if (f.size > 30 * 1024 * 1024) { $('msg').textContent = 'File 30 MB se badi hai.'; e.target.value = ''; return update(); }
+  file = f; $('fname').textContent = f.name;
+  const n = await countPages(f);
+  const manual = n === 0;
+  pages = manual ? 1 : n;
+  $('pages').value = pages;
+  $('pages').readOnly = !manual;
+  $('pgLabel').textContent = manual ? 'Pages (khud likhein)' : 'Total pages (apne aap)';
+  update();
+});
+
+/* ---------- Order ---------- */
+$('payBtn').addEventListener('click', async () => {
+  const btn = $('payBtn'); btn.disabled = true; btn.textContent = 'Bhej rahe hain...'; $('msg').textContent = '';
+  try {
+    const safe = file.name.replace(/[^A-Za-z0-9._-]+/g, '_').slice(-80);
+    const uid = (crypto.randomUUID && crypto.randomUUID()) || (Date.now() + '-' + Math.random().toString(36).slice(2));
+    const path = `${shop.id}/${uid}-${safe}`;
+    const up = await sb.storage.from('print-files').upload(path, file, { contentType: file.type, upsert: false });
+    if (up.error) throw up.error;
+    const { data, error } = await sb.rpc('create_order', {
+      p_shop_id: shop.id, p_file_name: file.name, p_file_path: path, p_pages: pages,
+      p_colour: st.colour, p_paper: st.paper, p_pps: st.pps, p_double: st.dbl, p_copies: st.copies
+    });
+    if (error) throw error;
+    store.set({ id: data.order_id, slug: shop.slug });
+    openTicket(data.order_id);
+  } catch (err) {
+    $('msg').textContent = 'Order nahi gaya: ' + (err.message || 'internet check karein');
+    btn.disabled = false;
+  }
+  btn.textContent = 'Order bhejo';
+});
+
+/* ---------- Ticket ---------- */
+const IDX = { received: 0, printing: 1, ready: 2, delivered: 3 };
+async function pollStatus() {
+  const { data } = await sb.rpc('get_order_status', { p_order_id: orderId });
+  if (!data) { backToOrder(); return false; }
+  const cur = IDX[data.status] ?? 0;
+  $('tno').textContent = '#' + String(data.ticket_no).padStart(3, '0');
+  $('tamt').textContent = '₹' + Number(data.amount);
+  $('tstate').textContent = ['Order mil gaya.', 'Print ho raha hai...', 'Aapka print ready hai. Counter se le lein.', 'Delivered. Dhanyavaad!'][cur];
+  [...$('steps').children].forEach((d, i) => { d.className = (i < cur || cur === 3) ? 'done' : (i === cur ? 'now' : ''); });
+  if (cur === 3) clearInterval(timer);
+  return true;
+}
+async function openTicket(id) {
+  orderId = id; show('ticketView'); clearInterval(timer);
+  if (await pollStatus()) timer = setInterval(pollStatus, 4000);
+}
+function backToOrder() {
+  clearInterval(timer); store.clear(); orderId = null; file = null; pages = 0;
+  $('file').value = ''; $('fname').textContent = ''; $('pages').value = 1; $('pages').readOnly = true;
+  $('payBtn').textContent = 'Order bhejo'; update(); show('orderView');
+}
+$('newBtn').addEventListener('click', backToOrder);
+
+/* ---------- Start ---------- */
+(async () => {
+  const slug = slugFromUrl();
+  if (!slug) return fail('Link galat hai', 'QR code dobara scan karein.');
+  const { data, error } = await sb.from('shop_public').select('*').eq('slug', slug).maybeSingle();
+  if (error) return fail('Load nahi hua', 'Internet check karein aur dobara try karein.');
+  if (!data) return fail('Dukaan nahi mili', 'Link ya QR code galat hai.');
+  shop = data;
+  $('shopName').textContent = shop.name;
+  document.title = shop.name + ' – Print order';
+  if (!shop.is_open) return fail('Abhi order band hai', 'Ye dukaan abhi online order nahi le rahi. Counter par baat karein.');
+  update();
+  const last = store.get();
+  if (last && last.slug === slug) openTicket(last.id); else show('orderView');
+})();
+</script>
+</body>
+</html>

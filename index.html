@@ -423,6 +423,7 @@ async function start(u) {
   filter = 'all'; query = ''; $('search').value = '';
   await loadOrders();
   startLive();
+  startPoll();
   show('appView');
 }
 
@@ -481,10 +482,35 @@ function startLive() {
     .subscribe(status => {
       const el = $('live'), on = status === 'SUBSCRIBED';
       el.classList.toggle('on', on);
-      el.textContent = on ? 'Live' : 'Reconnecting...';
+      el.textContent = on ? 'Live' : `Auto-refresh (${status})`;
     });
 }
-function stopLive() { if (channel) { sb.removeChannel(channel); channel = null; } }
+function stopLive() {
+  if (channel) { sb.removeChannel(channel); channel = null; }
+  stopPoll();
+}
+
+/* Backup: har 5 second mein naye orders check (realtime band ho tab bhi chalta hai) */
+let pollTimer = null;
+const sig = list => JSON.stringify(list.map(o => [o.id, o.status]));
+async function refreshOrders() {
+  if (!shop) return;
+  const { data, error } = await sb.from('orders').select('*').eq('shop_id', shop.id)
+    .order('created_at', { ascending: false }).limit(300);
+  if (error || !data) return;
+  if (sig(data) === sig(orders)) return;                 // kuch nahi badla
+  const known = new Set(orders.map(o => o.id));
+  const fresh = data.filter(o => !known.has(o.id));
+  orders = data;
+  if (fresh.length) { freshId = fresh[0].id; beep(); }
+  render();
+}
+function startPoll() {
+  stopPoll();
+  pollTimer = setInterval(() => { if (!document.hidden) refreshOrders(); }, 5000);
+}
+function stopPoll() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+document.addEventListener('visibilitychange', () => { if (!document.hidden && shop) refreshOrders(); });
 
 const NEXT = { received: 'printing', printing: 'ready', ready: 'delivered' };
 async function setStatus(id, status) {
@@ -508,6 +534,7 @@ $('addTest').addEventListener('click', async () => {
     pages, sheets, colour, paper, pages_per_sheet: pps, double_sided: dbl, copies, amount: sheets * rate * copies
   });
   if (error) alert('Test order nahi gaya: ' + friendly(error));
+  else refreshOrders();
 });
 
 /* ---------- Render ---------- */
@@ -558,6 +585,7 @@ function renderList() {
         ${actionHTML(o)}
       </article>`;
   }).join('');
+  if (freshId) setTimeout(() => { freshId = null; }, 1000);
   list.querySelectorAll('[data-a]').forEach(b => b.addEventListener('click', () => {
     const id = b.dataset.id, o = orders.find(x => x.id === id);
     if (!o) return;

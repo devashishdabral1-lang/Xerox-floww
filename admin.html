@@ -85,7 +85,8 @@ input:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid
 const SUPABASE_URL = 'https://iwzacblitkdzenmrugjj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_e5XcNyI8JFpzgMwBmE5XIg__BGgyjKM';
 const $ = id => document.getElementById(id);
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// alag storageKey: admin aur owner ka login ek doosre ko logout na kare
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { storageKey: 'xf-admin-auth' } });
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const DAY = 86400000;
 let shops = [], cfg = { monthly_price: '499', upi_id: '', whatsapp: '' };
@@ -131,9 +132,13 @@ async function load() {
   $('gmsg').textContent = '';
   const [a, b] = await Promise.all([sb.rpc('admin_list_shops'), sb.from('app_settings').select('*')]);
   if (a.error) {
-    show('auth');
-    $('lmsg').textContent = /not allowed/i.test(a.error.message) ? 'Ye account admin nahi hai.' : a.error.message;
-    await sb.auth.signOut(); return;
+    const m = a.error.message || '';
+    if (/not allowed/i.test(m)) { show('auth'); $('lmsg').textContent = 'Ye account admin nahi hai.'; await sb.auth.signOut(); }
+    else {
+      $('gmsg').textContent = 'Error: ' + m;
+      if ($('appView').classList.contains('hidden')) { show('auth'); $('lmsg').textContent = 'Error: ' + m; }
+    }
+    return;
   }
   shops = a.data || [];
   (b.data || []).forEach(r => cfg[r.key] = r.value);
@@ -141,9 +146,16 @@ async function load() {
   render(); show('app');
 }
 
-async function call(fn, args, okMsg) {
+async function call(fn, args) {
+  const { data: sess } = await sb.auth.getSession();
+  if (!sess.session) { alert('Login session khatam ho gaya. Dobara login karein.'); show('auth'); return; }
   const { error } = await sb.rpc(fn, args);
-  if (error) { $('gmsg').textContent = 'Error: ' + error.message; return; }
+  if (error) {
+    const m = error.message || String(error);
+    $('gmsg').textContent = 'Error: ' + m;
+    alert('Error: ' + m + (/permission denied/i.test(m) ? '\n\nLogout karke dobara login karein.' : ''));
+    return;
+  }
   await load();
 }
 
@@ -169,7 +181,7 @@ $('setForm').addEventListener('submit', async e => {
   const vals = { monthly_price: $('setPrice').value.trim(), upi_id: $('setUpi').value.trim(), whatsapp: $('setWa').value.replace(/\D/g, '') };
   for (const [k, v] of Object.entries(vals)) {
     const { error } = await sb.rpc('admin_set_setting', { p_key: k, p_value: v });
-    if (error) { $('smsg').classList.remove('ok'); return $('smsg').textContent = 'Error: ' + error.message; }
+    if (error) { $('smsg').classList.remove('ok'); $('smsg').textContent = 'Error: ' + error.message; alert('Error: ' + error.message); return; }
   }
   Object.assign(cfg, vals);
   $('smsg').classList.add('ok'); $('smsg').textContent = 'Save ho gaya.';

@@ -306,7 +306,8 @@ if (!window.supabase) {
   $('loadView').innerHTML = '<h2>Load nahi hua</h2><p class="sub">Internet check karein aur page refresh karein.</p>';
   throw new Error('supabase-js not loaded');
 }
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// alag storageKey: owner ka login admin panel se alag rahe
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { storageKey: 'xf-owner-auth' } });
 
 let user = null, shop = null, orders = [], channel = null;
 let filter = 'all', query = '', freshId = null;

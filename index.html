@@ -397,7 +397,7 @@ sb.auth.onAuthStateChange((event, session) => {
       if (user && user.id === session.user.id && shop) return;   // pehle se chal raha hai
       start(session.user);
     } else {
-      stopLive(); user = null; shop = null; orders = [];
+      stopLive(); stopWatch(); user = null; shop = null; orders = [];
       ['lEmail', 'lPass', 'sShop', 'sEmail', 'sPass'].forEach(id => $(id).value = '');
       setMsg($('lMsg'), ''); setMsg($('sMsg'), '');
       show('authView');
@@ -411,20 +411,39 @@ function problem(title, text, btn) {
   show('problemView');
 }
 
-async function start(u) {
+/* Admin pause / subscription badle to dashboard apne aap badal jaye (bina refresh) */
+let watchTimer = null, lastOpen = null;
+const DAY = 86400000;
+const isOpen = sh => sh.status !== 'paused' &&
+  ((sh.paid_until && new Date(sh.paid_until) > Date.now()) || new Date(sh.trial_ends_at) > Date.now());
+const shopSig = sh => sh ? [sh.status, sh.paid_until, sh.trial_ends_at].join('|') : '';
+function startWatch() { if (!watchTimer) watchTimer = setInterval(checkShop, 8000); }
+function stopWatch() { clearInterval(watchTimer); watchTimer = null; lastOpen = null; }
+async function checkShop() {
+  if (!user || document.hidden) return;
+  const { data } = await sb.from('shops').select('*').eq('owner_id', user.id).maybeSingle();
+  if (!data) return;
+  if (shopSig(data) !== shopSig(shop) || isOpen(data) !== lastOpen) start(user, true);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && user) checkShop(); });
+
+async function start(u, silent = false) {
   user = u;
-  show('loadView');
+  if (!silent) show('loadView');
   const { data, error } = await sb.from('shops').select('*').eq('owner_id', u.id).maybeSingle();
-  if (error) return problem('Dukaan load nahi hui', error.message);
-  if (!data) return problem('Dukaan nahi mili',
-    'Account ban gaya lekin dukaan ka record nahi bana. Supabase mein "handle_new_user" SQL (Kaam 2) chalayi thi? Chalane ke baad naya account banayein.');
+  if (error) { if (!silent) problem('Dukaan load nahi hui', error.message); return; }
+  if (!data) { if (!silent) problem('Dukaan nahi mili',
+    'Account ban gaya lekin dukaan ka record nahi bana. Supabase mein "handle_new_user" SQL (Kaam 2) chalayi thi? Chalane ke baad naya account banayein.'); return; }
   shop = data;
+  const wasApp = !$('appView').classList.contains('hidden');
+  startWatch();
 
   await loadSettings();
-  const DAY = 86400000;
   const trialLeft = Math.ceil((new Date(shop.trial_ends_at) - Date.now()) / DAY);
   const paidLeft = shop.paid_until ? Math.ceil((new Date(shop.paid_until) - Date.now()) / DAY) : 0;
-  if (shop.status === 'paused' || (paidLeft <= 0 && trialLeft <= 0)) {
+  lastOpen = isOpen(shop);
+  if (!lastOpen) {
+    stopLive();
     problem(shop.status === 'paused' ? 'Dukaan pause hai' : 'Subscription khatam ho gaya',
       'Customers ab order nahi de payenge. Dobara chalu karne ke liye subscription lein.');
     $('pPay').innerHTML = payHTML();
@@ -433,20 +452,22 @@ async function start(u) {
 
   $('shopName').textContent = shop.name;
   $('shopMeta').textContent = `Dukaan code: ${shop.slug} · ${u.email}`;
-  const b = $('trialBanner');
+  const bn = $('trialBanner');
   const daysLeft = paidLeft > 0 ? paidLeft : trialLeft;
-  b.classList.remove('hidden');
-  b.classList.toggle('low', daysLeft <= 5);
+  bn.classList.remove('hidden');
+  bn.classList.toggle('low', daysLeft <= 5);
   $('trialText').textContent = paidLeft > 0
     ? `Subscription chalu: ${paidLeft} din baaki (${fmtDate(shop.paid_until)} tak)`
     : `Free trial: ${trialLeft} din baaki`;
   $('planPay').innerHTML = payHTML();
-  fillRates();
-  buildQR();
-  filter = 'all'; query = ''; $('search').value = '';
-  await loadOrders();
-  startLive();
-  startPoll();
+  if (!(silent && wasApp)) {            // dashboard pehle se khula ho to orders/rates ko chhedo mat
+    fillRates();
+    buildQR();
+    filter = 'all'; query = ''; $('search').value = '';
+    await loadOrders();
+    startLive();
+    startPoll();
+  }
   show('appView');
 }
 

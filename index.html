@@ -249,6 +249,8 @@
 
   <div class="banner hidden" id="trialBanner"><span id="trialText"></span></div>
 
+  <div class="banner" id="usageBox"><span id="usageText"></span><div style="width:100%;height:6px;background:var(--line);border-radius:6px;overflow:hidden"><div id="usageFill" style="height:100%;width:0"></div></div></div>
+
   <details class="rates"><summary>Subscription aur payment</summary><div id="planPay" style="padding:10px 0"></div></details>
 
   <details class="rates">
@@ -423,6 +425,7 @@ async function checkShop() {
   if (!user || document.hidden) return;
   const { data } = await sb.from('shops').select('*').eq('owner_id', user.id).maybeSingle();
   if (!data) return;
+  loadUsage();
   if (shopSig(data) !== shopSig(shop) || isOpen(data) !== lastOpen) start(user, true);
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && user) checkShop(); });
@@ -439,6 +442,7 @@ async function start(u, silent = false) {
   startWatch();
 
   await loadSettings();
+  await loadUsage();
   const trialLeft = Math.ceil((new Date(shop.trial_ends_at) - Date.now()) / DAY);
   const paidLeft = shop.paid_until ? Math.ceil((new Date(shop.paid_until) - Date.now()) / DAY) : 0;
   lastOpen = isOpen(shop);
@@ -472,6 +476,27 @@ async function start(u, silent = false) {
 }
 
 /* ---------- Subscription / payment info ---------- */
+let planInfo = { name: 'Starter', limit: 300, price: 99, used: 0, all: [] };
+const monthStartIST = () => { const d = new Date(Date.now() + 5.5 * 3600000); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-01'; };
+async function loadUsage() {
+  if (!shop) return;
+  const [p, u] = await Promise.all([
+    sb.from('plans').select('*').order('monthly_limit'),
+    sb.from('orders').select('id', { count: 'exact', head: true }).eq('shop_id', shop.id).gte('order_date', monthStartIST())
+  ]);
+  const all = p.data || [], mine = all.find(x => x.key === shop.plan) || all[0];
+  if (mine) planInfo = { name: mine.name, limit: mine.monthly_limit, price: mine.price, used: u.count || 0, all };
+  renderUsage();
+}
+function renderUsage() {
+  const { name, limit, used } = planInfo, pct = Math.min(100, Math.round(used / limit * 100));
+  $('usageBox').classList.toggle('low', pct >= 80);
+  $('usageText').textContent = used >= limit
+    ? `${name} plan: is mahine ki limit poori (${used}/${limit}). Customers naye order nahi de payenge.`
+    : `${name} plan · is mahine ${used} / ${limit} orders`;
+  const f = $('usageFill'); f.style.width = pct + '%';
+  f.style.background = pct >= 100 ? 'var(--accent)' : pct >= 80 ? 'var(--warn)' : 'var(--ok)';
+}
 let cfg = { monthly_price: '499', upi_id: '', whatsapp: '' };
 const fmtDate = iso => new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 async function loadSettings() {
@@ -479,9 +504,9 @@ async function loadSettings() {
   (data || []).forEach(r => { cfg[r.key] = r.value; });
 }
 function payHTML() {
-  const price = cfg.monthly_price || '499';
+  const price = planInfo.price;
   const btnCss = 'display:block;text-align:center;text-decoration:none;margin-top:10px;padding:13px;border-radius:10px;font-weight:700;color:#fff;';
-  let h = `<p style="margin:0"><strong>₹${esc(price)} / mahina</strong> · unlimited orders</p>`;
+  let h = `<p style="margin:0"><strong>${esc(planInfo.name)}: ₹${esc(price)} / mahina</strong> · ${planInfo.limit} orders / mahina</p>`;
   if (cfg.upi_id) {
     const url = `upi://pay?pa=${encodeURIComponent(cfg.upi_id)}&amp;pn=${encodeURIComponent('Xerox Flow')}&amp;am=${encodeURIComponent(price)}&amp;cu=INR&amp;tn=${encodeURIComponent('Xerox Flow ' + shop.slug)}`;
     h += `<p class="sub">UPI ID: <strong>${esc(cfg.upi_id)}</strong></p>`;
@@ -492,6 +517,8 @@ function payHTML() {
     const text = encodeURIComponent(`Payment kar diya. Dukaan: ${shop.name} (${shop.slug})`);
     h += `<a href="https://wa.me/${wa}?text=${text}" style="${btnCss}background:var(--ink)">Payment screenshot WhatsApp par bhejo</a>`;
   }
+  const up = (planInfo.all || []).find(x => x.monthly_limit > planInfo.limit);
+  if (up) h += `<p class="sub">Zyada orders chahiye? ${esc(up.name)}: ₹${esc(String(up.price))} / mahina · ${up.monthly_limit} orders. WhatsApp par batayein.</p>`;
   if (!cfg.upi_id && !wa) h += '<p class="sub">Payment ki details abhi set nahi hui. Admin se sampark karein.</p>';
   h += '<p class="sub">Payment verify hote hi subscription chalu kar diya jayega.</p>';
   return h;
@@ -589,7 +616,7 @@ async function refreshOrders() {
   const known = new Set(orders.map(o => o.id));
   const fresh = data.filter(o => !known.has(o.id));
   orders = data;
-  if (fresh.length) { freshId = fresh[0].id; beep(); }
+  if (fresh.length) { freshId = fresh[0].id; beep(); loadUsage(); }
   render();
 }
 function startPoll() {
@@ -621,7 +648,7 @@ $('addTest').addEventListener('click', async () => {
     pages, sheets, colour, paper, pages_per_sheet: pps, double_sided: dbl, copies, amount: sheets * rate * copies
   });
   if (error) alert('Test order nahi gaya: ' + friendly(error));
-  else refreshOrders();
+  else { refreshOrders(); loadUsage(); }
 });
 
 /* ---------- Render ---------- */

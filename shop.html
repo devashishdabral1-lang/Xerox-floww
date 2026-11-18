@@ -244,6 +244,7 @@ $('newBtn').addEventListener('click', backToOrder);
   $('shopName').textContent = shop.name;
   document.title = shop.name + ' – Print order';
   if (!shop.is_open) return fail('Abhi order band hai', 'Ye dukaan abhi online order nahi le rahi. Counter par baat karein.');
+  if (shop.at_limit) return fail('Online orders abhi band hain', 'Ye dukaan is mahine ke online orders ki limit tak pahunch gayi hai. Counter par baat karein.');
   update();
   const nav = (performance.getEntriesByType('navigation')[0] || {}).type;
   const last = store.get();

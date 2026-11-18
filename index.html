@@ -187,6 +187,13 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
 .bf{border:0;border-radius:0;background:transparent;box-shadow:none;margin:-6px -20px 8px;--m1:linear-gradient(to bottom,transparent,#000 18%,#000 78%,transparent);--m2:linear-gradient(to right,transparent,#000 10%,#000 90%,transparent);-webkit-mask-image:var(--m1),var(--m2);mask-image:var(--m1),var(--m2);-webkit-mask-composite:source-in;mask-composite:intersect}
 .bf-in{margin:-20px 0 8px;-webkit-mask-image:linear-gradient(#000 76%,transparent);mask-image:linear-gradient(#000 76%,transparent);-webkit-mask-composite:source-over;mask-composite:add}
 @media(min-width:760px){.bf-in{margin-top:-30px}}
+
+#problemView{max-width:480px;padding-top:8vh;padding-bottom:40px}
+#problemView .pm-track{margin:0 -20px}
+#problemView .pm-dots{margin:6px 0 14px}
+#pBtn{background:transparent;color:var(--ink);border:1px solid var(--line);margin-top:8px}
+#pBtn:hover:not(:disabled){box-shadow:none;border-color:var(--accent);color:var(--accent)}
+@media(min-width:760px){#problemView{max-width:1040px}#problemView .pm-track{margin:0}}
 </style>
 </head>
 <body>
@@ -502,7 +509,7 @@ async function start(u, silent = false) {
     stopLive();
     problem(shop.status === 'paused' ? 'Dukaan pause hai' : 'Subscription khatam ho gaya',
       'Customers ab order nahi de payenge. Dobara chalu karne ke liye subscription lein.');
-    $('pPay').innerHTML = payHTML();
+    $('pPay').innerHTML = lockPlansHTML();
     return;
   }
 
@@ -633,16 +640,21 @@ function planPay(p) {
   const wUrl = wa ? `https://wa.me/${wa}?text=${encodeURIComponent(`Payment kar diya. Plan: ${p.name}. Dukaan: ${shop.name} (${shop.slug})`)}` : '';
   return { upi, wUrl };
 }
-function openPlans() {
-  const paid = paidNow(), list = paid ? (planInfo.all || []).filter(p => p.monthly_limit > planInfo.limit) : (planInfo.all || []);
-  if (!list.length) return;
-  const trialLeft = Math.max(0, Math.ceil((new Date(shop.trial_ends_at) - Date.now()) / DAY));
-  const hot = paid ? 0 : Math.min(1, list.length - 1);
-  const li = a => a.map(t => `<li>${esc(t)}</li>`).join('');
-  $('pmTitle').textContent = paid ? `Zyada orders chahiye? ${list[0].name} lo` : 'Apna plan chuno';
-  $('pmSub').textContent = paid ? `Is mahine ${planInfo.used} / ${planInfo.limit} orders use hue` : `Free trial: ${trialLeft} din baaki`;
+/* Trial card: sirf tab jab trial abhi chal raha ho, account naya ho aur ye plans pehli baar dikh rahe hon.
+   Jisne ek baar dekh/le liya, use dobara nahi; baaki sab ko sirf Starter/Pro. */
+function trialCardOK(first) {
+  if (paidNow() || shop.trial_used === true) return false;      // trial ek baar le liya = kabhi dobara nahi (database mein yaad rehta hai)
+  const left = Math.ceil((new Date(shop.trial_ends_at) - Date.now()) / DAY);
+  if (left <= 0) return false;
+  if (shop.trial_used === false) return true;                    // abhi tak ye dukaan trial card dekh nahi payi
+  // trial_used.sql abhi nahi chala ho to purana tareeka: is device par pehli baar + naya account
+  const young = shop.created_at ? Date.now() - new Date(shop.created_at) < 3 * DAY : true;
+  return first && young;
+}
+function planCardsHTML(list, hot, trialLeft, showTrial) {
+  const paid = paidNow(), li = a => a.map(t => `<li>${esc(t)}</li>`).join('');
   let h = '';
-  if (!paid) h += `<article class="pm-card"><h3>Free trial</h3><p class="pm-sub">Bina payment ke shuru karo</p>
+  if (showTrial) h += `<article class="pm-card"><h3>Free trial</h3><p class="pm-sub">Bina payment ke shuru karo</p>
     <div class="pm-price">₹0<small>/ ${trialLeft} din</small></div>
     <button class="pm-cta" type="button" data-close>Free trial se shuru karo</button>
     <ul class="pm-feats">${li([`${trialLeft} din tak sab features`, `${planInfo.limit} orders / mahina`, 'Customer QR + order link', 'Card ya payment ki zarurat nahi'])}</ul></article>`;
@@ -658,10 +670,30 @@ function openPlans() {
       <p class="pm-note">Payment ke baad ${wUrl ? `<a href="${esc(wUrl)}" target="_blank" rel="noopener">screenshot WhatsApp par bhejein</a>` : 'admin ko screenshot bhejein'}. Verify hote hi plan chalu.</p>
       <ul class="pm-feats">${li(feats)}</ul></article>`;
   });
-  $('pmTrack').innerHTML = h;
+  return h;
+}
+const dotsHTML = n => Array.from({ length: n }, (_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('');
+/* Subscription khatam / cancel hone par lock screen par bhi wahi swipe wale plans (trial card kabhi nahi) */
+function lockPlansHTML() {
+  const list = planInfo.all || [];
+  if (!list.length) return payHTML();
+  return `<div class="pm-dots">${dotsHTML(list.length)}</div><div class="pm-track">${planCardsHTML(list, Math.min(1, list.length - 1), 0, false)}</div>`;
+}
+function openPlans() {
+  const paid = paidNow(), all = planInfo.all || [], list = paid ? all.filter(p => p.monthly_limit > planInfo.limit) : all;
+  if (!list.length) return;
+  let seen = 0; try { seen = Number(localStorage.getItem('xf-plans-' + shop.id)) || 0; } catch (e) {}
+  const trialLeft = Math.max(0, Math.ceil((new Date(shop.trial_ends_at) - Date.now()) / DAY));
+  const showTrial = trialCardOK(!seen);
+  if (showTrial && shop.trial_used === false) {                   // card dikha diya = trial le liya, ab hamesha ke liye band
+    shop.trial_used = true;
+    sb.rpc('mark_trial_used', { p_shop_id: shop.id }).then(() => {}, () => {});
+  }
+  $('pmTitle').textContent = paid ? `Zyada orders chahiye? ${list[0].name} lo` : 'Apna plan chuno';
+  $('pmSub').textContent = paid ? `Is mahine ${planInfo.used} / ${planInfo.limit} orders use hue` : (trialLeft > 0 ? `Free trial: ${trialLeft} din baaki` : 'Plan lekar dukaan chalu rakhein');
+  $('pmTrack').innerHTML = planCardsHTML(list, paid ? 0 : Math.min(1, list.length - 1), trialLeft, showTrial);
   $('pmTrack').scrollLeft = 0;
-  const n = $('pmTrack').children.length;
-  $('pmDots').innerHTML = Array.from({ length: n }, (_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('');
+  $('pmDots').innerHTML = dotsHTML($('pmTrack').children.length);
   tickSale();
   $('plansModal').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
@@ -673,6 +705,12 @@ $('openPlans').addEventListener('click', openPlans);
 $('pmClose').addEventListener('click', closePlans);
 $('plansModal').addEventListener('click', e => { if (e.target === e.currentTarget || e.target.closest('[data-close]')) closePlans(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closePlans(); });
+document.addEventListener('scroll', e => {
+  const t = e.target; if (!t.classList || !t.classList.contains('pm-track') || t.id === 'pmTrack') return;
+  const c = t.firstElementChild, d = t.parentElement.querySelector('.pm-dots'); if (!c || !d) return;
+  const i = Math.round(t.scrollLeft / (c.offsetWidth + 12));
+  [...d.children].forEach((x, k) => x.classList.toggle('on', k === i));
+}, true);
 $('pmTrack').addEventListener('scroll', () => {
   const t = $('pmTrack'), c = t.firstElementChild; if (!c) return;
   const i = Math.round(t.scrollLeft / (c.offsetWidth + 12));

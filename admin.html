@@ -77,6 +77,22 @@ form.card{box-shadow:0 40px 90px -50px #000}
 .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
 .search{margin:0 0 16px;padding:12px 18px;border-radius:999px}
 @media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+.btn.danger{background:transparent;color:var(--bad);border:1px solid rgba(255,107,94,.45)}
+.btn.danger:hover:not(:disabled){background:rgba(255,107,94,.1);border-color:var(--bad);box-shadow:none}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes up{from{opacity:0;transform:translateY(50px)}to{opacity:1;transform:none}}
+.sheet{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);animation:fade .3s both}
+.sheet-in{width:100%;max-width:460px;max-height:92vh;overflow-y:auto;background:#0d0d0d;border:1px solid var(--line);border-radius:26px 26px 0 0;padding:24px 20px 26px;animation:up .5s var(--ease) both}
+.sheet-in h2{margin:0;font:700 20px "Sora",sans-serif;letter-spacing:-.02em}
+.pick{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;margin-top:10px;padding:15px 16px;border:1px solid var(--line);border-radius:14px;background:#121212;color:var(--ink);font:inherit;text-align:left;cursor:pointer;transition:all .3s var(--ease)}
+.pick:hover:not(:disabled){border-color:var(--accent);transform:translateY(-2px)}
+.pick:active:not(:disabled){transform:scale(.98)}
+.pick b{display:block;font:700 16px "Sora",sans-serif}
+.pick small{color:var(--muted);font-size:13px}
+.pick:disabled{border-color:rgba(157,226,79,.45);background:rgba(157,226,79,.06);cursor:default}
+.pick .tag{font-size:12px;padding:3px 10px;border-radius:99px;background:var(--accent);color:#0a0a0a;font-weight:600}
+.toast{position:fixed;left:0;right:0;margin:0 auto;width:max-content;max-width:90vw;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:60;padding:12px 22px;border-radius:999px;background:var(--accent);color:#0a0a0a;font-weight:600;box-shadow:0 14px 40px -12px rgba(157,226,79,.6);animation:fade .3s both}
 </style>
 </head>
 <body>
@@ -127,6 +143,15 @@ form.card{box-shadow:0 40px 90px -50px #000}
   <p class="msg" id="gmsg" role="alert"></p>
 </div>
 
+<div class="sheet hidden" id="pickView" role="dialog" aria-modal="true" aria-labelledby="pickT">
+  <div class="sheet-in">
+    <h2 id="pickT"></h2><p class="sub" id="pickS"></p>
+    <div id="pickList"></div>
+    <button class="btn line full" id="pickX" type="button">Band karo</button>
+  </div>
+</div>
+<div class="toast hidden" id="toast" role="status"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
 <script>
 const SUPABASE_URL = 'https://iwzacblitkdzenmrugjj.supabase.co';
@@ -169,7 +194,8 @@ function render() {
         <button class="btn ok" data-act="add1" data-id="${s.id}">+1 mahina</button>
         <button class="btn ok" data-act="add3" data-id="${s.id}">+3 mahine</button>
         <button class="btn line" data-act="plan" data-id="${s.id}">Plan badlo</button>
-        <button class="btn line" data-act="trial7" data-id="${s.id}">Trial +7 din</button>
+        ${left(s.paid_until) > 0 ? '' : `<button class="btn ok" data-act="trial7" data-id="${s.id}">7 din trial do</button>`}
+        ${(left(s.paid_until) > 0 || left(s.trial_ends_at) > 0) ? `<button class="btn danger" data-act="cancel" data-id="${s.id}">Plan cancel</button>` : ''}
         ${s.status === 'paused'
           ? `<button class="btn ink" data-act="resume" data-id="${s.id}">Chalu karo</button>`
           : `<button class="btn line" data-act="pause" data-id="${s.id}">Pause</button>`}
@@ -204,10 +230,58 @@ async function call(fn, args) {
   if (error) {
     const m = error.message || String(error);
     $('gmsg').textContent = 'Error: ' + m;
-    alert('Error: ' + m + (/permission denied/i.test(m) ? '\n\nLogout karke dobara login karein.' : ''));
-    return;
+    alert('Error: ' + m + (/could not find the function/i.test(m) ? '\n\nSupabase SQL Editor mein cancel_plan.sql chalayein.' : /permission denied/i.test(m) ? '\n\nLogout karke dobara login karein.' : ''));
+    return false;
   }
   await load();
+  return true;
+}
+
+let toastT = null;
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.remove('hidden');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.add('hidden'), 3200);
+}
+/* Plan chuno: saare plans ki list, jo chahiye us par tap */
+function openPicker(s) {
+  $('pickT').textContent = s.name;
+  $('pickS').textContent = 'Kaun sa plan dena hai? Tap karein.';
+  $('pickList').innerHTML = Object.values(plans).map(p => `
+    <button class="pick" type="button" data-key="${esc(p.key)}"${p.key === s.plan ? ' disabled' : ''}>
+      <span><b>${esc(p.name)}</b><small>${p.monthly_limit} orders / mahina · ₹${esc(p.price)}</small></span>
+      ${p.key === s.plan ? '<span class="tag">Abhi yahi</span>' : ''}
+    </button>`).join('');
+  $('pickView').dataset.id = s.id;
+  $('pickView').classList.remove('hidden');
+}
+function closePicker() { $('pickView').classList.add('hidden'); }
+$('pickX').addEventListener('click', closePicker);
+$('pickView').addEventListener('click', async e => {
+  if (e.target === e.currentTarget) return closePicker();
+  const b = e.target.closest('.pick'); if (!b || b.disabled) return;
+  const s = shops.find(x => x.id === $('pickView').dataset.id); if (!s) return;
+  closePicker();
+  if (await call('admin_set_shop_plan', { p_shop_id: s.id, p_plan: b.dataset.key })) toast(`${s.name}: ${plans[b.dataset.key].name} plan laga diya`);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePicker(); });
+
+/* 7 din ka trial: purani trial khatam ho chuki ho to bhi aaj se poore 7 din milen */
+async function giveTrial(s) {
+  if (s.status === 'paused' && !(await call('admin_set_status', { p_shop_id: s.id, p_status: 'trial' }))) return;
+  const target = Date.now() + 7 * DAY - 3600000;
+  if (!(await call('admin_extend_trial', { p_shop_id: s.id, p_days: 7 }))) return;
+  const now = shops.find(x => x.id === s.id);
+  if (now) {
+    const short = Math.ceil((target - new Date(now.trial_ends_at)) / DAY);
+    if (short > 0 && !(await call('admin_extend_trial', { p_shop_id: s.id, p_days: short }))) return;
+  }
+  toast(`${s.name}: 7 din ka trial chalu`);
+}
+
+/* Plan cancel: ek tap + OK, dukaan turant Expired */
+async function cancelPlan(s) {
+  if (!confirm(`${s.name} ka plan abhi cancel karein?\nDukaan turant Expired ho jayegi.`)) return;
+  if (await call('admin_cancel_plan', { p_shop_id: s.id })) toast(`${s.name}: plan cancel ho gaya`);
 }
 
 $('list').addEventListener('click', e => {
@@ -219,11 +293,11 @@ $('list').addEventListener('click', e => {
     if (confirm(`${s.name}: ₹${amt} mil gaye? ${m} mahina chalu karein?`))
       call('admin_activate', { p_shop_id: s.id, p_months: m, p_amount: amt, p_note: 'manual UPI' });
   } else if (b.dataset.act === 'plan') {
-    const keys = Object.keys(plans), next = keys[(keys.indexOf(s.plan) + 1) % keys.length];
-    if (confirm(`${s.name}: plan ${plans[s.plan].name} se ${plans[next].name} karein?`))
-      call('admin_set_shop_plan', { p_shop_id: s.id, p_plan: next });
+    openPicker(s);
   } else if (b.dataset.act === 'trial7') {
-    call('admin_extend_trial', { p_shop_id: s.id, p_days: 7 });
+    giveTrial(s);
+  } else if (b.dataset.act === 'cancel') {
+    cancelPlan(s);
   } else if (b.dataset.act === 'pause') {
     if (confirm(`${s.name} ko pause karein? Customers order nahi de payenge.`)) call('admin_set_status', { p_shop_id: s.id, p_status: 'paused' });
   } else if (b.dataset.act === 'resume') {

@@ -179,12 +179,14 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
 .bf-b{border:0;cursor:pointer;padding:14px 28px;border-radius:13px;background:var(--accent);color:#0a0a0a;font:700 15px "Sora",sans-serif;box-shadow:0 6px 0 #5f9c1d,0 18px 40px -14px rgba(157,226,79,.65);transition:transform .2s var(--ease),box-shadow .2s}
 .bf-b:hover{transform:translateY(-2px)}
 .bf-b:active{transform:translateY(4px);box-shadow:0 2px 0 #5f9c1d,0 8px 20px -10px rgba(157,226,79,.6)}
-.bf-x{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.45);color:#ddd;font-size:18px;line-height:1;cursor:pointer;transition:all .3s var(--ease)}
-.bf-x:hover{border-color:#ff4f9f;color:#ff4f9f}
 .bf-in{padding:46px 14px 20px;gap:14px;margin:-20px 0 8px;border:0;border-radius:28px 28px 24px 24px;box-shadow:none}
 .bf-in .bf-h{font-size:clamp(28px,8.6vw,42px)}
 .bf-in .bf-u b{width:clamp(50px,16vw,66px);height:clamp(56px,18vw,74px);font-size:clamp(24px,7.5vw,32px)}
 @media(min-width:760px){.bf-in{margin-top:-30px}.bf{padding-top:42px}}
+
+.bf{border:0;border-radius:0;background:transparent;box-shadow:none;margin:-6px -20px 8px;--m1:linear-gradient(to bottom,transparent,#000 18%,#000 78%,transparent);--m2:linear-gradient(to right,transparent,#000 10%,#000 90%,transparent);-webkit-mask-image:var(--m1),var(--m2);mask-image:var(--m1),var(--m2);-webkit-mask-composite:source-in;mask-composite:intersect}
+.bf-in{margin:-20px 0 8px;-webkit-mask-image:linear-gradient(#000 76%,transparent);mask-image:linear-gradient(#000 76%,transparent);-webkit-mask-composite:source-over;mask-composite:add}
+@media(min-width:760px){.bf-in{margin-top:-30px}}
 </style>
 </head>
 <body>
@@ -265,7 +267,6 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
 <!-- Dashboard -->
 <div class="wrap hidden" id="appView">
   <div class="bf hidden" id="bfBar">
-    <button class="bf-x" id="bfX" type="button" aria-label="Banner band karo">&times;</button>
     <h2 class="bf-h"><span>BLACK FRIDAY</span><span class="bf-h2">SALE</span></h2>
     <div class="bf-t"></div>
     <button class="bf-b" id="bfGo" type="button">Get started</button>
@@ -583,9 +584,8 @@ const SALE = { on: true, ends: '2026-11-30T23:59:59+05:30', percent: 0 };
 const saleOn = () => SALE.on && new Date(SALE.ends) > Date.now();
 const salePrice = p => (saleOn() && SALE.percent > 0) ? Math.round(p.price * (100 - SALE.percent) / 100) : Number(p.price);
 function tickSale() {
-  let closed = false; try { closed = sessionStorage.getItem('xf-bf-x') === '1'; } catch (e) {}
   const live = saleOn() && shop && lastOpen && !(paidNow() && !hasHigher());
-  $('bfBar').classList.toggle('hidden', !live || closed);
+  $('bfBar').classList.toggle('hidden', !live);
   $('bfPop').classList.toggle('hidden', !live);
   if (!live) return;
   const t = Math.floor((new Date(SALE.ends) - Date.now()) / 1000);
@@ -604,7 +604,6 @@ function tickSale() {
   });
 }
 setInterval(tickSale, 1000);
-$('bfX').addEventListener('click', () => { try { sessionStorage.setItem('xf-bf-x', '1'); } catch (e) {} tickSale(); });
 $('bfGo').addEventListener('click', () => openPlans());
 
 /* ---------- Plans popup ---------- */

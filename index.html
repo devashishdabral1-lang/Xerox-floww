@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#0a0a0a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,800&family=DM+Sans:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
 
 <style>
 :root{--paper:#0a0a0a;--card:#141414;--card2:#1b1b1b;--ink:#ececec;--muted:#8b8b8b;--line:#272727;--accent:#9de24f;--ok:#2dd4a7;--warn:#f5b942;--bad:#ff6b5e;--ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.56,.64,1);color-scheme:dark}
@@ -157,28 +157,34 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
 .pm-card.hot .pm-feats li::before{background:#0a0a0a;color:var(--accent)}
 @media(min-width:760px){.pm{align-items:center}.pm-sheet{max-width:1040px;border-radius:28px;padding-top:30px}.pm-dots{display:none}.pm-track{justify-content:center;padding:6px 32px 10px;overflow:visible}.pm-card{flex:0 1 318px}.pm-x{top:18px;left:18px}}
 
-.bf{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 16px;padding:14px 18px;margin-bottom:22px;border-radius:18px;background:linear-gradient(110deg,#cdf582,#97dc3f 50%,#63a01f);color:#0a0a0a;box-shadow:0 24px 60px -34px rgba(157,226,79,.65);animation:rise .7s var(--ease) both}
-.bf::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.38) 50%,transparent 65%);transform:translateX(-110%);animation:sheen 5s 1.4s ease-in-out infinite}
-@keyframes sheen{to{transform:translateX(110%)}}
-.bf-l{display:flex;flex-direction:column;line-height:1.25}
-.bf-l b{font:700 18px "Sora",sans-serif;letter-spacing:-.025em}
-.bf-l span{font-size:13px;color:rgba(10,10,10,.68)}
-.bf-t{display:flex;gap:6px;position:relative;z-index:1}
-.bf-u{display:flex;flex-direction:column;align-items:center;min-width:48px;padding:6px 6px 5px;border-radius:11px;background:#0a0a0a;color:var(--accent)}
-.bf-u b{font:700 18px/1.1 "Sora",sans-serif;font-variant-numeric:tabular-nums}
-.bf-u i{font:500 10px "DM Sans",sans-serif;color:#9a9a9a}
-.bf-b{position:relative;z-index:1;border:0;cursor:pointer;padding:13px 22px;border-radius:12px;background:#0a0a0a;color:var(--accent);font:700 14px "Sora",sans-serif;transition:transform .25s var(--ease),box-shadow .3s}
-.bf-b:hover{transform:translateY(-2px);box-shadow:0 12px 28px -12px rgba(0,0,0,.7)}
-.bf-b:active{transform:scale(.97)}
-.bf-in{margin:0 20px 16px;padding:11px 14px;justify-content:center;gap:10px 14px;box-shadow:none}
-.bf-in .bf-u{min-width:42px;padding:4px 5px 3px}
-.bf-in .bf-u b{font-size:16px}
-.bf-in .bf-l b{font-size:15px}
 .pm-price s{font:500 20px "DM Sans",sans-serif;letter-spacing:0;color:var(--muted);margin-right:8px}
 .pm-card.hot .pm-price s{color:rgba(10,10,10,.55)}
 .pm-off{font:700 11.5px "DM Sans",sans-serif;padding:4px 9px;border-radius:99px;background:#0a0a0a;color:var(--accent);letter-spacing:0}
-@media(max-width:560px){.bf-t{flex:1}.bf-u{flex:1}.bf-b{width:100%}.bf-in .bf-l{display:none}}
-@media(min-width:760px){.bf-in{max-width:520px;margin-left:auto;margin-right:auto}}
+
+.bf{position:relative;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;align-items:center;gap:18px;padding:36px 16px 26px;margin-bottom:24px;border-radius:24px;border:1px solid rgba(255,45,138,.3);background:#09060a;text-align:center;box-shadow:0 30px 80px -40px rgba(255,45,138,.6);animation:rise .7s var(--ease) both}
+.bf::before{content:"";position:absolute;inset:-20%;z-index:-2;background:radial-gradient(60% 45% at 50% 36%,rgba(255,45,138,.5),transparent 70%),repeating-conic-gradient(from 195deg at 8% 92%,rgba(255,45,138,.3) 0 1.2deg,transparent 1.2deg 7deg);-webkit-mask:radial-gradient(70% 80% at 40% 55%,#000 20%,transparent 78%);mask:radial-gradient(70% 80% at 40% 55%,#000 20%,transparent 78%)}
+.bf::after{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(rgba(255,45,138,.17) 1.5px,transparent 1.5px),linear-gradient(90deg,rgba(255,45,138,.17) 1.5px,transparent 1.5px);background-size:64px 64px;background-position:center;-webkit-mask:radial-gradient(75% 70% at 50% 45%,#000,transparent);mask:radial-gradient(75% 70% at 50% 45%,#000,transparent)}
+.bf-h{margin:0;display:flex;flex-direction:column;font:800 clamp(34px,10.6vw,56px)/.96 "Archivo","Sora",Impact,sans-serif;font-variation-settings:"wdth" 125;letter-spacing:-.01em;color:#ffe6f1;animation:dash .9s var(--ease) both}
+.bf-h span{display:block;text-shadow:0 0 6px #ff4f9f,0 0 20px #ff2d8a,0 0 46px rgba(255,45,138,.75),-5px 0 0 rgba(255,170,210,.55),-10px 0 0 rgba(255,120,185,.42),-16px 0 0 rgba(255,80,160,.3),5px 0 0 rgba(255,170,210,.45),11px 0 0 rgba(255,120,185,.3),18px 0 0 rgba(255,80,160,.18);animation:echo 3.6s ease-in-out infinite}
+@keyframes echo{50%{text-shadow:0 0 8px #ff4f9f,0 0 26px #ff2d8a,0 0 58px rgba(255,45,138,.85),-2px 0 0 rgba(255,170,210,.5),-4px 0 0 rgba(255,120,185,.34),-7px 0 0 rgba(255,80,160,.2),2px 0 0 rgba(255,170,210,.4),5px 0 0 rgba(255,120,185,.24),8px 0 0 rgba(255,80,160,.12)}}
+@keyframes dash{from{opacity:0;transform:translateX(46px);filter:blur(9px)}to{opacity:1;transform:none;filter:none}}
+.bf-t{display:flex;gap:10px;justify-content:center}
+.bf-u{display:flex;flex-direction:column;align-items:center;gap:8px}
+.bf-u b{position:relative;display:grid;place-items:center;width:clamp(58px,19vw,82px);height:clamp(66px,21vw,92px);border-radius:15px;border:1px solid rgba(255,45,138,.6);background:linear-gradient(180deg,#1b0d14,#0c0709);box-shadow:0 0 24px rgba(255,45,138,.38),inset 0 0 20px rgba(255,45,138,.14);font:800 clamp(28px,9vw,40px)/1 "Archivo","Sora",sans-serif;font-variation-settings:"wdth" 125;font-variant-numeric:tabular-nums;overflow:hidden}
+.bf-u b span{display:block;background:linear-gradient(#fff 35%,#ff9cc6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.bf-u b span.flip{animation:flip .6s var(--ease)}
+@keyframes flip{from{transform:perspective(240px) rotateX(-80deg);opacity:0}to{transform:none;opacity:1}}
+.bf-u b::after{content:"";position:absolute;left:0;right:0;top:50%;height:1.5px;background:rgba(0,0,0,.85);box-shadow:0 1px 0 rgba(255,255,255,.07)}
+.bf-u i{font:500 11px "DM Sans",sans-serif;font-style:normal;color:#c58aa3}
+.bf-b{border:0;cursor:pointer;padding:14px 28px;border-radius:13px;background:var(--accent);color:#0a0a0a;font:700 15px "Sora",sans-serif;box-shadow:0 6px 0 #5f9c1d,0 18px 40px -14px rgba(157,226,79,.65);transition:transform .2s var(--ease),box-shadow .2s}
+.bf-b:hover{transform:translateY(-2px)}
+.bf-b:active{transform:translateY(4px);box-shadow:0 2px 0 #5f9c1d,0 8px 20px -10px rgba(157,226,79,.6)}
+.bf-x{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.45);color:#ddd;font-size:18px;line-height:1;cursor:pointer;transition:all .3s var(--ease)}
+.bf-x:hover{border-color:#ff4f9f;color:#ff4f9f}
+.bf-in{padding:46px 14px 20px;gap:14px;margin:-20px 0 8px;border:0;border-radius:28px 28px 24px 24px;box-shadow:none}
+.bf-in .bf-h{font-size:clamp(28px,8.6vw,42px)}
+.bf-in .bf-u b{width:clamp(50px,16vw,66px);height:clamp(56px,18vw,74px);font-size:clamp(24px,7.5vw,32px)}
+@media(min-width:760px){.bf-in{margin-top:-30px}.bf{padding-top:42px}}
 </style>
 </head>
 <body>
@@ -259,7 +265,8 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
 <!-- Dashboard -->
 <div class="wrap hidden" id="appView">
   <div class="bf hidden" id="bfBar">
-    <div class="bf-l"><b>Black Friday Sale</b><span>Offer khatam hone mein</span></div>
+    <button class="bf-x" id="bfX" type="button" aria-label="Banner band karo">&times;</button>
+    <h2 class="bf-h"><span>BLACK FRIDAY</span><span class="bf-h2">SALE</span></h2>
     <div class="bf-t"></div>
     <button class="bf-b" id="bfGo" type="button">Get started</button>
   </div>
@@ -328,8 +335,8 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
 <div class="pm hidden" id="plansModal" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
   <div class="pm-sheet">
     <button class="pm-x" id="pmClose" type="button" aria-label="Band karo">&times;</button>
+    <div class="bf bf-in hidden" id="bfPop"><h2 class="bf-h"><span>BLACK FRIDAY</span><span class="bf-h2">SALE</span></h2><div class="bf-t"></div></div>
     <div class="pm-dots" id="pmDots"></div>
-    <div class="bf bf-in hidden" id="bfPop"><div class="bf-l"><b>Black Friday Sale</b></div><div class="bf-t"></div></div>
     <div class="pm-head"><h2 id="pmTitle"></h2><p class="sub" id="pmSub"></p></div>
     <div class="pm-track" id="pmTrack"></div>
   </div>
@@ -576,16 +583,28 @@ const SALE = { on: true, ends: '2026-11-30T23:59:59+05:30', percent: 0 };
 const saleOn = () => SALE.on && new Date(SALE.ends) > Date.now();
 const salePrice = p => (saleOn() && SALE.percent > 0) ? Math.round(p.price * (100 - SALE.percent) / 100) : Number(p.price);
 function tickSale() {
+  let closed = false; try { closed = sessionStorage.getItem('xf-bf-x') === '1'; } catch (e) {}
   const live = saleOn() && shop && lastOpen && !(paidNow() && !hasHigher());
-  $('bfBar').classList.toggle('hidden', !live);
+  $('bfBar').classList.toggle('hidden', !live || closed);
   $('bfPop').classList.toggle('hidden', !live);
   if (!live) return;
   const t = Math.floor((new Date(SALE.ends) - Date.now()) / 1000);
-  const u = [[Math.floor(t / 86400), 'din'], [Math.floor(t % 86400 / 3600), 'ghante'], [Math.floor(t % 3600 / 60), 'min'], [t % 60, 'sec']];
-  const html = u.map(([v, l]) => `<span class="bf-u"><b>${String(v).padStart(2, '0')}</b><i>${l}</i></span>`).join('');
-  document.querySelectorAll('.bf-t').forEach(e => { e.innerHTML = html; });
+  const v = [Math.floor(t / 86400), Math.floor(t % 86400 / 3600), Math.floor(t % 3600 / 60), t % 60], lab = ['din', 'ghante', 'min', 'sec'];
+  const head = SALE.percent > 0 ? SALE.percent + '% OFF' : 'SALE';
+  document.querySelectorAll('.bf-h2').forEach(e => { if (e.textContent !== head) e.textContent = head; });
+  document.querySelectorAll('.bf-t').forEach(box => {
+    if (!box.children.length) box.innerHTML = lab.map(x => `<span class="bf-u"><b><span></span></b><i>${x}</i></span>`).join('');
+    [...box.children].forEach((u, k) => {
+      const sp = u.firstChild.firstChild, val = String(v[k]).padStart(2, '0');
+      if (sp.textContent === val) return;
+      sp.textContent = val;
+      if (sp.dataset.on) { sp.classList.remove('flip'); void sp.offsetWidth; sp.classList.add('flip'); }   // flip sirf badalne par
+      sp.dataset.on = 1;
+    });
+  });
 }
 setInterval(tickSale, 1000);
+$('bfX').addEventListener('click', () => { try { sessionStorage.setItem('xf-bf-x', '1'); } catch (e) {} tickSale(); });
 $('bfGo').addEventListener('click', () => openPlans());
 
 /* ---------- Plans popup ---------- */
@@ -595,7 +614,7 @@ function plansBtn() {
   const b = $('openPlans'), paid = paidNow();
   b.classList.toggle('hidden', paid && !hasHigher());   // sabse bade plan wale ko button/popup nahi
   b.textContent = paid ? 'Upgrade karo' : 'Plans dekho';
-  $('bfGo').textContent = paid ? 'Upgrade karo' : 'Get started';
+  $('bfGo').textContent = paid ? 'Upgrade karo' : (SALE.percent > 0 ? `Get plan with ${SALE.percent}% OFF` : 'Get started');
   tickSale();
 }
 function maybePlans() {

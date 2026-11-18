@@ -202,6 +202,10 @@
           <button type="button" class="showpw" data-for="sPass">Dikhao</button>
         </span>
       </label>
+      <label class="f" style="display:flex;gap:10px;align-items:flex-start">
+        <input type="checkbox" id="sAgree" style="width:auto;display:inline-block;padding:0;margin:5px 0 0">
+        <span>Main <a href="/terms.html" target="_blank">Terms</a> aur <a href="/privacy.html" target="_blank">Privacy Policy</a> se sehmat hoon.</span>
+      </label>
       <p class="msg" id="sMsg" role="alert"></p>
       <button class="btn main" type="submit" id="sBtn">Account banao · 14 din free</button>
     </form>
@@ -360,8 +364,9 @@ $('signupForm').addEventListener('submit', async e => {
   if (!shopName) return setMsg($('sMsg'), 'Dukaan ka naam likhein.');
   if (!validEmail(email)) return setMsg($('sMsg'), 'Sahi email likhein.');
   if (pw.length < 6) return setMsg($('sMsg'), 'Password kam se kam 6 akshar ka rakhein.');
+  if (!$('sAgree').checked) return setMsg($('sMsg'), 'Terms aur Privacy Policy se sehmat hona zaroori hai.');
   $('sBtn').disabled = true;
-  const { data, error } = await sb.auth.signUp({ email, password: pw, options: { data: { shop_name: shopName } } });
+  const { data, error } = await sb.auth.signUp({ email, password: pw, options: { data: { shop_name: shopName, accepted_terms_at: new Date().toISOString() } } });
   $('sBtn').disabled = false;
   if (error) return setMsg($('sMsg'), friendly(error));
   if (!data.session) setMsg($('sMsg'), 'Account ban gaya. Email confirm karne ka link inbox mein bheja hai.', true);

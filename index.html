@@ -206,6 +206,8 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
   <p class="shop">Xerox <span>Flow</span></p>
   <p class="sub">Dukaan owner ke liye</p>
   <div class="auth-card">
+    <button type="button" class="btn" id="googleBtn" style="background:var(--card2);color:var(--ink);border:1px solid var(--line);margin-bottom:6px">Google se continue karo</button>
+    <p class="info" style="text-align:center;margin:6px 0 14px">ya email se</p>
     <div class="authtabs" role="tablist">
       <button class="authtab" role="tab" id="tabLogin" aria-selected="true">Login</button>
       <button class="authtab" role="tab" id="tabSignup" aria-selected="false">Naya account</button>
@@ -259,6 +261,26 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
       </label>
       <p class="msg" id="rMsg" role="alert"></p>
       <button class="btn main" type="submit">Password badlo</button>
+    </form>
+  </div>
+</main>
+
+<!-- Naya dukaandar (Google login) - dukaan ka naam -->
+<main class="auth hidden" id="onboardView">
+  <p class="shop">Dukaan <span>banao</span></p>
+  <p class="sub" id="obWho"></p>
+  <div class="auth-card">
+    <form id="obForm" novalidate>
+      <label class="f">Dukaan ka naam
+        <input type="text" id="obShop" autocomplete="organization" maxlength="80" required>
+      </label>
+      <label class="f hidden" id="obAgreeRow" style="display:flex;gap:10px;align-items:flex-start">
+        <input type="checkbox" id="obAgree" style="width:auto;display:inline-block;padding:0;margin:5px 0 0">
+        <span>Main <a href="/terms.html" target="_blank">Terms</a> aur <a href="/privacy.html" target="_blank">Privacy Policy</a> se sehmat hoon.</span>
+      </label>
+      <p class="msg" id="obMsg" role="alert"></p>
+      <button class="btn main" type="submit" id="obBtn">Dukaan banao · 7 din free trial</button>
+      <p class="info" style="text-align:center"><button type="button" class="link" id="obLogout">Logout</button></p>
     </form>
   </div>
 </main>
@@ -358,7 +380,7 @@ const SUPABASE_URL = 'https://iwzacblitkdzenmrugjj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_e5XcNyI8JFpzgMwBmE5XIg__BGgyjKM';
 
 const $ = id => document.getElementById(id);
-const VIEWS = ['loadView', 'authView', 'recoverView', 'problemView', 'appView'];
+const VIEWS = ['loadView', 'authView', 'recoverView', 'onboardView', 'problemView', 'appView'];
 function show(v) { if (v !== 'appView') closePlans(); VIEWS.forEach(id => $(id).classList.toggle('hidden', id !== v)); window.scrollTo(0, 0); }
 
 if (!window.supabase) {
@@ -444,6 +466,40 @@ $('recoverForm').addEventListener('submit', async e => {
   start(user || (await sb.auth.getUser()).data.user);
 });
 
+/* ---------- Google login ---------- */
+$('googleBtn').addEventListener('click', async () => {
+  setMsg($('lMsg'), ''); setMsg($('sMsg'), '');
+  const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/' } });
+  if (error) {
+    const m = /not enabled|unsupported provider/i.test(error.message) ? 'Google login abhi chalu nahi hai.' : friendly(error);
+    setMsg($('lMsg'), m); setMsg($('sMsg'), m);
+  }
+});
+
+/* ---------- Naya dukaandar (jisko abhi dukaan nahi bani): naam poochho ---------- */
+function showOnboarding() {
+  const meta = (user && user.user_metadata) || {};
+  $('obWho').textContent = (user && user.email) || '';
+  $('obAgreeRow').classList.toggle('hidden', !!meta.accepted_terms_at);
+  show('onboardView');
+  $('obShop').focus();
+}
+$('obLogout').addEventListener('click', () => sb.auth.signOut());
+$('obForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  setMsg($('obMsg'), '');
+  const name = $('obShop').value.trim();
+  if (name.length < 2) return setMsg($('obMsg'), 'Dukaan ka naam likhein (kam se kam 2 akshar).');
+  const needAgree = !$('obAgreeRow').classList.contains('hidden');
+  if (needAgree && !$('obAgree').checked) return setMsg($('obMsg'), 'Terms aur Privacy Policy se sehmat hona zaroori hai.');
+  $('obBtn').disabled = true;
+  if (needAgree) await sb.auth.updateUser({ data: { accepted_terms_at: new Date().toISOString() } });
+  const { error } = await sb.rpc('create_my_shop', { p_name: name });
+  $('obBtn').disabled = false;
+  if (error) return setMsg($('obMsg'), friendly(error));
+  start(user);     // dashboard khulega, aur plans popup (Free trial / Starter / Pro) apne aap aayega
+});
+
 async function doLogout() { await sb.auth.signOut(); }
 $('logout').addEventListener('click', doLogout);
 $('pBtn').addEventListener('click', doLogout);
@@ -454,6 +510,7 @@ sb.auth.onAuthStateChange((event, session) => {
   setTimeout(() => {
     if (event === 'PASSWORD_RECOVERY') { user = session && session.user; return show('recoverView'); }
     if (session && session.user) {
+      if (event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') return;
       if (user && user.id === session.user.id && shop) return;   // pehle se chal raha hai
       start(session.user);
     } else {
@@ -494,8 +551,7 @@ async function start(u, silent = false) {
   if (!silent) show('loadView');
   const { data, error } = await sb.from('shops').select('*').eq('owner_id', u.id).maybeSingle();
   if (error) { if (!silent) problem('Dukaan load nahi hui', error.message); return; }
-  if (!data) { if (!silent) problem('Dukaan nahi mili',
-    'Account ban gaya lekin dukaan ka record nahi bana. Supabase mein "handle_new_user" SQL (Kaam 2) chalayi thi? Chalane ke baad naya account banayein.'); return; }
+  if (!data) { if (!silent) showOnboarding(); return; }
   shop = data;
   const wasApp = !$('appView').classList.contains('hidden');
   startWatch();

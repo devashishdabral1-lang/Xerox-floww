@@ -120,6 +120,65 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
 
 #planPay a[href^="upi"]{color:#0a0a0a!important}
 #planPay a[href^="https://wa.me"]{background:#1d1d1d!important;color:var(--ink)!important;border:1px solid var(--line)}
+
+#openPlans{font-weight:600;border-bottom:1px solid rgba(157,226,79,.45)}
+.pm{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);animation:pmfade .35s ease both}
+@keyframes pmfade{from{opacity:0}to{opacity:1}}
+@keyframes pmup{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
+.pm-sheet{position:relative;width:100%;max-width:460px;max-height:94vh;overflow-y:auto;background:#0d0d0d;border:1px solid var(--line);border-radius:28px 28px 0 0;padding:20px 0 26px;animation:pmup .55s var(--ease) both}
+.pm-x{position:absolute;top:14px;left:14px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#161616;color:var(--ink);font-size:20px;line-height:1;cursor:pointer;transition:all .3s var(--ease);z-index:2}
+.pm-x:hover{border-color:var(--accent);color:var(--accent);transform:rotate(90deg)}
+.pm-dots{display:flex;justify-content:center;gap:6px;height:8px;margin:10px 0 18px}
+.pm-dots i{width:6px;height:6px;border-radius:99px;background:#333;transition:all .35s var(--ease)}
+.pm-dots i.on{width:20px;background:var(--accent)}
+.pm-head{padding:0 24px 16px;text-align:center}
+.pm-head h2{font-weight:700;font-size:21px;margin:0;letter-spacing:-.025em}
+.pm-track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 8% 10px;scrollbar-width:none}
+.pm-track::-webkit-scrollbar{display:none}
+.pm-card{flex:0 0 84%;scroll-snap-align:center;display:flex;flex-direction:column;gap:14px;padding:22px;border-radius:24px;background:linear-gradient(180deg,#1d1d1d,#121212);border:1px solid var(--line);animation:rise .6s var(--ease) both}
+.pm-card:nth-child(2){animation-delay:.08s}.pm-card:nth-child(3){animation-delay:.16s}
+.pm-card.hot{background:linear-gradient(155deg,#cdf582,#97dc3f 55%,#63a01f);border:0;color:#0a0a0a;box-shadow:0 30px 70px -34px rgba(157,226,79,.6)}
+.pm-card h3{margin:0;font:700 24px "Sora",sans-serif;letter-spacing:-.03em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pm-tag{font:600 11.5px "DM Sans",sans-serif;padding:4px 10px;border-radius:99px;background:#0a0a0a;color:var(--accent);letter-spacing:0}
+.pm-sub{margin:-8px 0 0;font-size:14px;color:var(--muted)}
+.pm-price{font:700 42px/1 "Sora",sans-serif;letter-spacing:-.05em}
+.pm-price small{font:500 14px "DM Sans",sans-serif;letter-spacing:0;color:var(--muted);margin-left:6px}
+.pm-card.hot .pm-sub,.pm-card.hot .pm-price small,.pm-card.hot .pm-note{color:rgba(10,10,10,.65)}
+.pm-cta{display:block;width:100%;text-align:center;text-decoration:none;border:0;cursor:pointer;padding:15px;border-radius:14px;background:#ececec;color:#0a0a0a;font:700 15px "Sora",sans-serif;transition:transform .25s var(--ease),box-shadow .3s}
+.pm-cta:hover{transform:translateY(-2px);box-shadow:0 12px 30px -12px rgba(0,0,0,.7)}
+.pm-card.hot .pm-cta{background:#0a0a0a;color:var(--accent)}
+.pm-cta.off{opacity:.5;cursor:default}
+.pm-note{margin:-4px 0 0;font-size:12.5px;color:var(--muted);text-align:center}
+.pm-note a{color:inherit;text-decoration:underline}
+.pm-feats{list-style:none;margin:2px 0 0;padding:16px 0 0;border-top:1px solid rgba(255,255,255,.09);display:flex;flex-direction:column;gap:11px;font-size:14.5px}
+.pm-card.hot .pm-feats{border-top-color:rgba(10,10,10,.18)}
+.pm-feats li{display:flex;gap:11px;align-items:center}
+.pm-feats li::before{content:"\2713";flex:none;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#0a0a0a;font-size:12px;font-weight:700;display:grid;place-items:center}
+.pm-card.hot .pm-feats li::before{background:#0a0a0a;color:var(--accent)}
+@media(min-width:760px){.pm{align-items:center}.pm-sheet{max-width:1040px;border-radius:28px;padding-top:30px}.pm-dots{display:none}.pm-track{justify-content:center;padding:6px 32px 10px;overflow:visible}.pm-card{flex:0 1 318px}.pm-x{top:18px;left:18px}}
+
+.bf{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 16px;padding:14px 18px;margin-bottom:22px;border-radius:18px;background:linear-gradient(110deg,#cdf582,#97dc3f 50%,#63a01f);color:#0a0a0a;box-shadow:0 24px 60px -34px rgba(157,226,79,.65);animation:rise .7s var(--ease) both}
+.bf::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.38) 50%,transparent 65%);transform:translateX(-110%);animation:sheen 5s 1.4s ease-in-out infinite}
+@keyframes sheen{to{transform:translateX(110%)}}
+.bf-l{display:flex;flex-direction:column;line-height:1.25}
+.bf-l b{font:700 18px "Sora",sans-serif;letter-spacing:-.025em}
+.bf-l span{font-size:13px;color:rgba(10,10,10,.68)}
+.bf-t{display:flex;gap:6px;position:relative;z-index:1}
+.bf-u{display:flex;flex-direction:column;align-items:center;min-width:48px;padding:6px 6px 5px;border-radius:11px;background:#0a0a0a;color:var(--accent)}
+.bf-u b{font:700 18px/1.1 "Sora",sans-serif;font-variant-numeric:tabular-nums}
+.bf-u i{font:500 10px "DM Sans",sans-serif;color:#9a9a9a}
+.bf-b{position:relative;z-index:1;border:0;cursor:pointer;padding:13px 22px;border-radius:12px;background:#0a0a0a;color:var(--accent);font:700 14px "Sora",sans-serif;transition:transform .25s var(--ease),box-shadow .3s}
+.bf-b:hover{transform:translateY(-2px);box-shadow:0 12px 28px -12px rgba(0,0,0,.7)}
+.bf-b:active{transform:scale(.97)}
+.bf-in{margin:0 20px 16px;padding:11px 14px;justify-content:center;gap:10px 14px;box-shadow:none}
+.bf-in .bf-u{min-width:42px;padding:4px 5px 3px}
+.bf-in .bf-u b{font-size:16px}
+.bf-in .bf-l b{font-size:15px}
+.pm-price s{font:500 20px "DM Sans",sans-serif;letter-spacing:0;color:var(--muted);margin-right:8px}
+.pm-card.hot .pm-price s{color:rgba(10,10,10,.55)}
+.pm-off{font:700 11.5px "DM Sans",sans-serif;padding:4px 9px;border-radius:99px;background:#0a0a0a;color:var(--accent);letter-spacing:0}
+@media(max-width:560px){.bf-t{flex:1}.bf-u{flex:1}.bf-b{width:100%}.bf-in .bf-l{display:none}}
+@media(min-width:760px){.bf-in{max-width:520px;margin-left:auto;margin-right:auto}}
 </style>
 </head>
 <body>
@@ -170,7 +229,7 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
         <span>Main <a href="/terms.html" target="_blank">Terms</a> aur <a href="/privacy.html" target="_blank">Privacy Policy</a> se sehmat hoon.</span>
       </label>
       <p class="msg" id="sMsg" role="alert"></p>
-      <button class="btn main" type="submit" id="sBtn">Account banao · 14 din free</button>
+      <button class="btn main" type="submit" id="sBtn">Account banao · 7 din free</button>
     </form>
   </div>
 </main>
@@ -199,6 +258,11 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
 
 <!-- Dashboard -->
 <div class="wrap hidden" id="appView">
+  <div class="bf hidden" id="bfBar">
+    <div class="bf-l"><b>Black Friday Sale</b><span>Offer khatam hone mein</span></div>
+    <div class="bf-t"></div>
+    <button class="bf-b" id="bfGo" type="button">Get started</button>
+  </div>
   <header>
     <div>
       <p class="shop" id="shopName"></p>
@@ -214,7 +278,7 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
     </div>
   </header>
 
-  <div class="banner hidden" id="trialBanner"><span id="trialText"></span></div>
+  <div class="banner hidden" id="trialBanner"><span id="trialText"></span><button class="link" id="openPlans" type="button">Plans dekho</button></div>
 
   <div class="banner" id="usageBox"><span id="usageText"></span><div style="width:100%;height:6px;background:var(--line);border-radius:6px;overflow:hidden"><div id="usageFill" style="height:100%;width:0"></div></div></div>
 
@@ -260,6 +324,17 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
   </div>
 </div>
 
+<!-- Plans popup -->
+<div class="pm hidden" id="plansModal" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
+  <div class="pm-sheet">
+    <button class="pm-x" id="pmClose" type="button" aria-label="Band karo">&times;</button>
+    <div class="pm-dots" id="pmDots"></div>
+    <div class="bf bf-in hidden" id="bfPop"><div class="bf-l"><b>Black Friday Sale</b></div><div class="bf-t"></div></div>
+    <div class="pm-head"><h2 id="pmTitle"></h2><p class="sub" id="pmSub"></p></div>
+    <div class="pm-track" id="pmTrack"></div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
@@ -269,7 +344,7 @@ const SUPABASE_KEY = 'sb_publishable_e5XcNyI8JFpzgMwBmE5XIg__BGgyjKM';
 
 const $ = id => document.getElementById(id);
 const VIEWS = ['loadView', 'authView', 'recoverView', 'problemView', 'appView'];
-function show(v) { VIEWS.forEach(id => $(id).classList.toggle('hidden', id !== v)); window.scrollTo(0, 0); }
+function show(v) { if (v !== 'appView') closePlans(); VIEWS.forEach(id => $(id).classList.toggle('hidden', id !== v)); window.scrollTo(0, 0); }
 
 if (!window.supabase) {
   $('loadView').innerHTML = '<h2>Load nahi hua</h2><p class="sub">Internet check karein aur page refresh karein.</p>';
@@ -441,7 +516,9 @@ async function start(u, silent = false) {
     startLive();
     startPoll();
   }
+  plansBtn();
   show('appView');
+  if (!(silent && wasApp)) setTimeout(maybePlans, 1100);   // popup dashboard dikhne ke baad
 }
 
 /* ---------- Subscription / payment info ---------- */
@@ -492,6 +569,97 @@ function payHTML() {
   h += '<p class="sub">Payment verify hote hi subscription chalu kar diya jayega.</p>';
   return h;
 }
+
+/* ---------- Black Friday sale (yahan badlein) ---------- */
+// ends: sale kab khatam hogi (IST). percent: 0 = sirf timer; 10-90 daalein to plans par cut-price + UPI amount bhi kam ho jayega.
+const SALE = { on: true, ends: '2026-11-30T23:59:59+05:30', percent: 0 };
+const saleOn = () => SALE.on && new Date(SALE.ends) > Date.now();
+const salePrice = p => (saleOn() && SALE.percent > 0) ? Math.round(p.price * (100 - SALE.percent) / 100) : Number(p.price);
+function tickSale() {
+  const live = saleOn() && shop && lastOpen && !(paidNow() && !hasHigher());
+  $('bfBar').classList.toggle('hidden', !live);
+  $('bfPop').classList.toggle('hidden', !live);
+  if (!live) return;
+  const t = Math.floor((new Date(SALE.ends) - Date.now()) / 1000);
+  const u = [[Math.floor(t / 86400), 'din'], [Math.floor(t % 86400 / 3600), 'ghante'], [Math.floor(t % 3600 / 60), 'min'], [t % 60, 'sec']];
+  const html = u.map(([v, l]) => `<span class="bf-u"><b>${String(v).padStart(2, '0')}</b><i>${l}</i></span>`).join('');
+  document.querySelectorAll('.bf-t').forEach(e => { e.innerHTML = html; });
+}
+setInterval(tickSale, 1000);
+$('bfGo').addEventListener('click', () => openPlans());
+
+/* ---------- Plans popup ---------- */
+const paidNow = () => !!(shop.paid_until && new Date(shop.paid_until) > Date.now());
+const hasHigher = () => (planInfo.all || []).some(p => p.monthly_limit > planInfo.limit);
+function plansBtn() {
+  const b = $('openPlans'), paid = paidNow();
+  b.classList.toggle('hidden', paid && !hasHigher());   // sabse bade plan wale ko button/popup nahi
+  b.textContent = paid ? 'Upgrade karo' : 'Plans dekho';
+  $('bfGo').textContent = paid ? 'Upgrade karo' : 'Get started';
+  tickSale();
+}
+function maybePlans() {
+  if (!shop || !lastOpen || $('appView').classList.contains('hidden')) return;
+  const paid = paidNow();
+  if (paid && !hasHigher()) return;
+  const near = planInfo.used / planInfo.limit >= 0.8;
+  const trialLeft = Math.ceil((new Date(shop.trial_ends_at) - Date.now()) / DAY);
+  let seen = 0; try { seen = Number(localStorage.getItem('xf-plans-' + shop.id)) || 0; } catch (e) {}
+  // trial: pehli baar zaroor; phir sirf jab trial ke 3 din bache ho ya limit paas ho. Starter (paid): har 3 din, limit paas ho to roz
+  const gap = paid ? (near ? DAY : 3 * DAY) : (trialLeft <= 3 || near ? DAY : Infinity);
+  if (!seen || Date.now() - seen > gap) openPlans();
+}
+function planPay(p) {
+  const wa = String(cfg.whatsapp || '').replace(/\D/g, '');
+  const upi = cfg.upi_id ? `upi://pay?pa=${encodeURIComponent(cfg.upi_id)}&pn=${encodeURIComponent('Xerox Flow')}&am=${encodeURIComponent(salePrice(p))}&cu=INR&tn=${encodeURIComponent('Xerox Flow ' + p.name + ' ' + shop.slug)}` : '';
+  const wUrl = wa ? `https://wa.me/${wa}?text=${encodeURIComponent(`Payment kar diya. Plan: ${p.name}. Dukaan: ${shop.name} (${shop.slug})`)}` : '';
+  return { upi, wUrl };
+}
+function openPlans() {
+  const paid = paidNow(), list = paid ? (planInfo.all || []).filter(p => p.monthly_limit > planInfo.limit) : (planInfo.all || []);
+  if (!list.length) return;
+  const trialLeft = Math.max(0, Math.ceil((new Date(shop.trial_ends_at) - Date.now()) / DAY));
+  const hot = paid ? 0 : Math.min(1, list.length - 1);
+  const li = a => a.map(t => `<li>${esc(t)}</li>`).join('');
+  $('pmTitle').textContent = paid ? `Zyada orders chahiye? ${list[0].name} lo` : 'Apna plan chuno';
+  $('pmSub').textContent = paid ? `Is mahine ${planInfo.used} / ${planInfo.limit} orders use hue` : `Free trial: ${trialLeft} din baaki`;
+  let h = '';
+  if (!paid) h += `<article class="pm-card"><h3>Free trial</h3><p class="pm-sub">Bina payment ke shuru karo</p>
+    <div class="pm-price">₹0<small>/ ${trialLeft} din</small></div>
+    <button class="pm-cta" type="button" data-close>Free trial se shuru karo</button>
+    <ul class="pm-feats">${li([`${trialLeft} din tak sab features`, `${planInfo.limit} orders / mahina`, 'Customer QR + order link', 'Card ya payment ki zarurat nahi'])}</ul></article>`;
+  list.forEach((p, i) => {
+    const { upi, wUrl } = planPay(p), href = upi || wUrl;
+    const cta = href ? `<a class="pm-cta" href="${esc(href)}"${upi ? '' : ' target="_blank" rel="noopener"'}>${esc(p.name)} lo · ₹${salePrice(p)}</a>` : '<span class="pm-cta off">Admin se sampark karein</span>';
+    const feats = [`${p.monthly_limit} orders / mahina`];
+    if (paid) feats.push(`${p.monthly_limit - planInfo.limit} orders extra`);
+    feats.push('Customer QR + order link', 'Live order alerts', 'File print ke baad auto-delete');
+    h += `<article class="pm-card${i === hot ? ' hot' : ''}"><h3>${esc(p.name)}${i === hot ? '<span class="pm-tag">Recommended</span>' : ''}${salePrice(p) < p.price ? `<span class="pm-off">-${SALE.percent}%</span>` : ''}</h3>
+      <p class="pm-sub">₹${(salePrice(p) / p.monthly_limit).toFixed(2)} per order</p>
+      <div class="pm-price">${salePrice(p) < p.price ? `<s>₹${esc(p.price)}</s>` : ''}₹${salePrice(p)}<small>/ mahina</small></div>${cta}
+      <p class="pm-note">Payment ke baad ${wUrl ? `<a href="${esc(wUrl)}" target="_blank" rel="noopener">screenshot WhatsApp par bhejein</a>` : 'admin ko screenshot bhejein'}. Verify hote hi plan chalu.</p>
+      <ul class="pm-feats">${li(feats)}</ul></article>`;
+  });
+  $('pmTrack').innerHTML = h;
+  $('pmTrack').scrollLeft = 0;
+  const n = $('pmTrack').children.length;
+  $('pmDots').innerHTML = Array.from({ length: n }, (_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('');
+  tickSale();
+  $('plansModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  $('pmClose').focus();
+  try { localStorage.setItem('xf-plans-' + shop.id, String(Date.now())); } catch (e) {}
+}
+function closePlans() { $('plansModal').classList.add('hidden'); document.body.style.overflow = ''; }
+$('openPlans').addEventListener('click', openPlans);
+$('pmClose').addEventListener('click', closePlans);
+$('plansModal').addEventListener('click', e => { if (e.target === e.currentTarget || e.target.closest('[data-close]')) closePlans(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePlans(); });
+$('pmTrack').addEventListener('scroll', () => {
+  const t = $('pmTrack'), c = t.firstElementChild; if (!c) return;
+  const i = Math.round(t.scrollLeft / (c.offsetWidth + 12));
+  [...$('pmDots').children].forEach((d, k) => d.classList.toggle('on', k === i));
+}, { passive: true });
 
 /* ---------- Customer link + QR ---------- */
 const custUrl = () => location.origin + '/s/' + shop.slug;

@@ -426,6 +426,7 @@ async function checkShop() {
   const { data } = await sb.from('shops').select('*').eq('owner_id', user.id).maybeSingle();
   if (!data) return;
   loadUsage();
+  sweepFiles();
   if (shopSig(data) !== shopSig(shop) || isOpen(data) !== lastOpen) start(user, true);
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && user) checkShop(); });
@@ -562,7 +563,7 @@ async function loadOrders() {
   const { data, error } = await sb.from('orders').select('*').eq('shop_id', shop.id)
     .order('created_at', { ascending: false }).limit(300);
   if (error) { orders = []; $('list').innerHTML = `<div class="empty">Orders load nahi hue: ${esc(error.message)}</div>`; return; }
-  orders = data; render();
+  orders = data; render(); sweepFiles();
 }
 
 function upsert(row) {
@@ -627,12 +628,34 @@ function stopPoll() { if (pollTimer) { clearInterval(pollTimer); pollTimer = nul
 document.addEventListener('visibilitychange', () => { if (!document.hidden && shop) refreshOrders(); });
 
 const NEXT = { received: 'printing', printing: 'ready', ready: 'delivered' };
+/* Privacy: delivery ke baad (ya 24 ghante baad) customer ki file storage se delete */
+let purging = false;
+async function purgeFiles(list) {
+  const items = list.filter(o => o.file_path);
+  if (!items.length || purging) return;
+  purging = true;
+  try {
+    const { error } = await sb.storage.from('print-files').remove(items.map(o => o.file_path));
+    if (!error) {
+      await sb.rpc('clear_order_files', { p_order_ids: items.map(o => o.id) });
+      items.forEach(o => { o.file_path = null; });
+      render();
+    }
+  } catch (e) {}
+  purging = false;
+}
+function sweepFiles() {
+  const cutoff = Date.now() - 24 * 3600 * 1000;
+  purgeFiles(orders.filter(o => o.file_path && (o.status === 'delivered' || new Date(o.created_at) < cutoff)));
+}
+
 async function setStatus(id, status) {
   const o = orders.find(x => x.id === id); if (!o) return;
   const old = o.status;
   o.status = status; freshId = null; render();           // turant dikhao
   const { error } = await sb.from('orders').update({ status }).eq('id', id);
   if (error) { o.status = old; render(); alert('Status badal nahi paya: ' + friendly(error)); }
+  else if (status === 'delivered') purgeFiles([o]);
 }
 
 $('addTest').addEventListener('click', async () => {

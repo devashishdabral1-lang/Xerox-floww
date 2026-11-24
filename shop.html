@@ -269,7 +269,9 @@ $('payBtn').addEventListener('click', async () => {
         payment_mode: 'cash'
       })
     });
-    const data = await resp.json();
+    const rawText = await resp.text();
+    let data = {};
+    try { data = JSON.parse(rawText); } catch (e) { throw new Error('Server error (' + resp.status + '): ' + rawText.slice(0, 120)); }
     if (!resp.ok) throw new Error(data.error || 'Order verify nahi ho paya');
 
     store.set(shop.slug, data.order_id);

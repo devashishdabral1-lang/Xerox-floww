@@ -333,6 +333,35 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
     </form>
   </details>
 
+  <details class="rates" id="printerBox">
+    <summary>Printer settings aur Auto-Print <span id="agentPill" style="margin-left:auto;margin-right:10px;font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--warn)">Agent Offline</span></summary>
+    <form id="printerForm" class="rategrid" novalidate>
+      <label class="f">B&amp;W A4 Printer naam
+        <input type="text" id="p_bw_a4" list="printerList" placeholder="jaise: HP LaserJet M1005">
+      </label>
+      <label class="f">Colour A4 Printer naam
+        <input type="text" id="p_c_a4" list="printerList" placeholder="jaise: Epson L3250 Series">
+      </label>
+      <label class="f">A3 Printer naam (optional)
+        <input type="text" id="p_a3" list="printerList" placeholder="agar A3 printer hai">
+      </label>
+      <label class="f" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:18px">
+        <span>Auto-Duplex (dono taraf khud print)</span>
+        <span class="toggle"><input type="checkbox" id="p_duplex" checked><span></span></span>
+      </label>
+      <datalist id="printerList"></datalist>
+      <div style="grid-column:1/-1;margin-top:8px;padding-top:10px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">
+        <span class="sub" style="margin:0">Print Agent Token: <code id="agentTok" style="color:var(--ink)">••••••••</code></span>
+        <span style="display:flex;gap:10px">
+          <button type="button" class="link" id="toggleTok">Dikhao</button>
+          <button type="button" class="link" id="copyTok">Token copy karo</button>
+        </span>
+      </div>
+      <button class="btn" type="submit" style="margin-top:10px">Printer settings save karo</button>
+      <p class="msg" id="printerMsg" style="grid-column:1/-1;margin:0"></p>
+    </form>
+  </details>
+
   <details class="rates">
     <summary>Customer QR aur link</summary>
     <div style="text-align:center;padding:12px 0">
@@ -355,10 +384,7 @@ details.rates:hover,details.rates[open]{border-color:#3a3a3a}
 
   <div class="list" id="list"></div>
 
-  <div class="demo">
-    <span>Test: customer page abhi nahi bana, isliye yahan se test order bhejein.</span>
-    <button class="btn" id="addTest">+ Test order</button>
-  </div>
+
 </div>
 
 <!-- Plans popup -->
@@ -542,6 +568,7 @@ async function checkShop() {
   if (!data) return;
   loadUsage();
   sweepFiles();
+  shop.agent_last_seen = data.agent_last_seen; shop.available_printers = data.available_printers; renderAgentStatus();
   if (shopSig(data) !== shopSig(shop) || isOpen(data) !== lastOpen) start(user, true);
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && user) checkShop(); });
@@ -581,6 +608,7 @@ async function start(u, silent = false) {
   $('planPay').innerHTML = payHTML();
   if (!(silent && wasApp)) {            // dashboard pehle se khula ho to orders/rates ko chhedo mat
     fillRates();
+    fillPrinters();
     buildQR();
     filter = 'all'; query = ''; $('search').value = '';
     await loadOrders();
@@ -806,6 +834,55 @@ $('rateForm').addEventListener('submit', async e => {
   setMsg($('rateMsg'), 'Rates save ho gaye.', true);
 });
 
+/* ---------- Printer mapping + Agent status (#5) ---------- */
+let tokShown = false;
+function renderAgentStatus() {
+  const pill = $('agentPill');
+  if (!pill || !shop) return;
+  const last = shop.agent_last_seen ? new Date(shop.agent_last_seen).getTime() : 0;
+  const online = last > 0 && (Date.now() - last) < 75000;
+  pill.textContent = online ? 'Agent Online' : 'Agent Offline';
+  pill.style.color = online ? 'var(--ok)' : 'var(--warn)';
+  pill.style.borderColor = online ? 'rgba(45,212,167,.45)' : 'rgba(245,185,66,.45)';
+  const dl = $('printerList');
+  if (dl && Array.isArray(shop.available_printers)) {
+    dl.innerHTML = shop.available_printers.map(p => `<option value="${esc(p)}"></option>`).join('');
+  }
+}
+function fillPrinters() {
+  $('p_bw_a4').value = shop.printer_bw_a4 || '';
+  $('p_c_a4').value = shop.printer_color_a4 || '';
+  $('p_a3').value = shop.printer_a3 || '';
+  $('p_duplex').checked = shop.supports_duplex !== false;
+  tokShown = false;
+  $('agentTok').textContent = shop.agent_token ? '••••••••••••' : 'SQL run karein';
+  $('toggleTok').textContent = 'Dikhao';
+  renderAgentStatus();
+}
+$('toggleTok').addEventListener('click', () => {
+  if (!shop || !shop.agent_token) return;
+  tokShown = !tokShown;
+  $('agentTok').textContent = tokShown ? shop.agent_token : '••••••••••••';
+  $('toggleTok').textContent = tokShown ? 'Chhupao' : 'Dikhao';
+});
+$('copyTok').addEventListener('click', async () => {
+  if (!shop || !shop.agent_token) return;
+  try { await navigator.clipboard.writeText(shop.agent_token); $('copyTok').textContent = 'Copy ho gaya'; setTimeout(() => { $('copyTok').textContent = 'Token copy karo'; }, 2000); } catch (e) {}
+});
+$('printerForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const payload = {
+    printer_bw_a4: $('p_bw_a4').value.trim(),
+    printer_color_a4: $('p_c_a4').value.trim(),
+    printer_a3: $('p_a3').value.trim(),
+    supports_duplex: $('p_duplex').checked
+  };
+  const { error } = await sb.from('shops').update(payload).eq('id', shop.id);
+  if (error) return setMsg($('printerMsg'), friendly(error));
+  Object.assign(shop, payload);
+  setMsg($('printerMsg'), 'Printer settings save ho gayi.', true);
+});
+
 /* ---------- Orders + live ---------- */
 async function loadOrders() {
   const { data, error } = await sb.from('orders').select('*').eq('shop_id', shop.id)
@@ -906,22 +983,6 @@ async function setStatus(id, status) {
   else if (status === 'delivered') purgeFiles([o]);
 }
 
-$('addTest').addEventListener('click', async () => {
-  const pick = a => a[Math.floor(Math.random() * a.length)];
-  const colour = Math.random() < 0.2 ? 'color' : 'bw', paper = Math.random() < 0.1 ? 'A3' : 'A4';
-  const pps = pick([1, 1, 1, 2, 4]), dbl = Math.random() < 0.5, copies = pick([1, 1, 2, 3]);
-  const pages = Math.floor(Math.random() * 28) + 1;
-  const sides = Math.ceil(pages / pps), sheets = dbl ? Math.ceil(sides / 2) : sides;
-  const rate = colour === 'bw' ? (paper === 'A4' ? shop.rate_bw_a4 : shop.rate_bw_a3) : (paper === 'A4' ? shop.rate_color_a4 : shop.rate_color_a3);
-  const { error } = await sb.from('orders').insert({
-    shop_id: shop.id,
-    file_name: pick(['assignment.pdf', 'Notes_Unit3.pdf', 'Resume_Rahul.pdf', 'Fee_receipt.png', 'Project_Report.pdf']),
-    pages, sheets, colour, paper, pages_per_sheet: pps, double_sided: dbl, copies, amount: sheets * rate * copies
-  });
-  if (error) alert('Test order nahi gaya: ' + friendly(error));
-  else { refreshOrders(); loadUsage(); }
-});
-
 /* ---------- Render ---------- */
 const STATUS = ['received', 'printing', 'ready', 'delivered'];
 const LABEL = { received: 'Naye', printing: 'Printing', ready: 'Ready', delivered: 'Delivered' };
@@ -954,7 +1015,7 @@ function renderList() {
   if (q) items = orders.filter(o => String(o.ticket_no).includes(q) || o.file_name.toLowerCase().includes(q));
   const list = $('list');
   if (!items.length) {
-    list.innerHTML = `<div class="empty">${q ? 'Is search se koi order nahi mila.' : orders.length ? 'Is section mein abhi koi order nahi hai.' : 'Abhi koi order nahi aaya. Neeche "+ Test order" se test karein.'}</div>`;
+    list.innerHTML = `<div class="empty">${q ? 'Is search se koi order nahi mila.' : orders.length ? 'Is section mein abhi koi order nahi hai.' : 'Abhi koi order nahi aaya. Customer QR scan hote hi orders yahan live aayenge.'}</div>`;
     return;
   }
   list.innerHTML = items.map(o => {

@@ -932,7 +932,7 @@ function stopLive() {
 
 /* Backup: har 5 second mein naye orders check (realtime band ho tab bhi chalta hai) */
 let pollTimer = null;
-const sig = list => JSON.stringify(list.map(o => [o.id, o.status]));
+const sig = list => JSON.stringify(list.map(o => [o.id, o.status, o.auto_print_status]));
 async function refreshOrders() {
   if (!shop) return;
   const { data, error } = await sb.from('orders').select('*').eq('shop_id', shop.id)
@@ -983,6 +983,14 @@ async function setStatus(id, status) {
   else if (status === 'delivered') purgeFiles([o]);
 }
 
+async function queueAutoPrint(id) {
+  const o = orders.find(x => x.id === id); if (!o) return;
+  const prevAuto = o.auto_print_status;
+  o.auto_print_status = 'queued'; o.payment_status = 'paid'; freshId = null; render();
+  const { error } = await sb.from('orders').update({ auto_print_status: 'queued', payment_status: 'paid' }).eq('id', id);
+  if (error) { o.auto_print_status = prevAuto; render(); alert('Auto-print queue nahi hua: ' + friendly(error)); }
+}
+
 /* ---------- Render ---------- */
 const STATUS = ['received', 'printing', 'ready', 'delivered'];
 const LABEL = { received: 'Naye', printing: 'Printing', ready: 'Ready', delivered: 'Delivered' };
@@ -1004,7 +1012,15 @@ function renderTabs() {
   $('tabs').querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => { filter = b.dataset.f; render(); }));
 }
 function actionHTML(o) {
-  if (o.status === 'received') return `<button class="btn" data-a="next" data-id="${o.id}">Print shuru karo</button>`;
+  if (o.status === 'received') {
+    if (o.auto_print_status === 'queued') {
+      return `<button class="btn ready" disabled>Printer queue mein hai...</button>`;
+    }
+    const label = o.auto_print_status === 'failed'
+      ? 'Print fail hua · Dobara Auto-Print karo'
+      : 'Cash mila · Auto-Print karo';
+    return `<button class="btn" data-a="autoprint" data-id="${o.id}">${label}</button>`;
+  }
   if (o.status === 'printing') return `<button class="btn ready" data-a="next" data-id="${o.id}">Print ho gaya · Ready</button>`;
   if (o.status === 'ready')    return `<button class="btn done" data-a="next" data-id="${o.id}">Customer ko de diya</button>`;
   return `<div class="done-row"><span>Delivered ✓</span><button class="link" data-a="undo" data-id="${o.id}">Wapas Ready karo</button></div>`;
@@ -1037,6 +1053,7 @@ function renderList() {
     const id = b.dataset.id, o = orders.find(x => x.id === id);
     if (!o) return;
     if (b.dataset.a === 'file') return openFile(o);
+    if (b.dataset.a === 'autoprint') return queueAutoPrint(id);
     setStatus(id, b.dataset.a === 'undo' ? 'ready' : NEXT[o.status]);
   }));
 }

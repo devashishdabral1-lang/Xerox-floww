@@ -1,6 +1,6 @@
 // api/agent.js (Vercel Serverless Function — CommonJS)
 // Secure bridge between your Supabase database and the shop's Windows Print Agent.
-// Uses x-agent-token (per-shop secret) so SUPABASE_SERVICE_ROLE_KEY NEVER leaves Vercel.
+// Supports: heartbeat (claim job), download (Vercel proxy fallback if shop ISP blocks Supabase), complete.
 
 const { createClient } = require('@supabase/supabase-js');
 
@@ -23,7 +23,6 @@ module.exports = async function handler(req, res) {
 
     const sb = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
-    // 1. Authenticate shop by its unique agent_token
     const { data: shop, error: shopErr } = await sb
       .from('shops')
       .select('id, name, slug, status, printer_bw_a4, printer_color_a4, printer_a3, supports_duplex')
@@ -37,7 +36,7 @@ module.exports = async function handler(req, res) {
     const body = req.body || {};
     const action = body.action || 'heartbeat';
 
-    // 2. HEARTBEAT + CLAIM NEXT QUEUED PRINT JOB
+    // 1. HEARTBEAT + CLAIM NEXT QUEUED PRINT JOB
     if (action === 'heartbeat') {
       const updateShop = { agent_last_seen: new Date().toISOString() };
       if (Array.isArray(body.printers) && body.printers.length > 0) {
@@ -45,7 +44,6 @@ module.exports = async function handler(req, res) {
       }
       await sb.from('shops').update(updateShop).eq('id', shop.id);
 
-      // Find oldest queued job for this shop
       const { data: jobs, error: jobErr } = await sb
         .from('orders')
         .select('*')
@@ -55,16 +53,13 @@ module.exports = async function handler(req, res) {
         .order('created_at', { ascending: true })
         .limit(1);
 
-      if (jobErr) {
-        return res.status(500).json({ error: jobErr.message });
-      }
+      if (jobErr) return res.status(500).json({ error: jobErr.message });
       if (!jobs || !jobs.length) {
         return res.status(200).json({ ok: true, shop: shop.name, job: null });
       }
 
       const job = jobs[0];
 
-      // Atomically claim the job so two polls can never double-print it
       const { data: claimed, error: claimErr } = await sb
         .from('orders')
         .update({ auto_print_status: 'printing', status: 'printing' })
@@ -76,7 +71,6 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ ok: true, shop: shop.name, job: null });
       }
 
-      // Generate short-lived signed URL for the print-ready PDF
       const { data: signed, error: signErr } = await sb.storage
         .from('print-files')
         .createSignedUrl(job.file_path, 180);
@@ -89,7 +83,6 @@ module.exports = async function handler(req, res) {
         return res.status(500).json({ error: 'Could not sign file URL' });
       }
 
-      // Pick mapped printer based on paper size & colour
       let printerName = '';
       if (job.paper === 'A3' && shop.printer_a3) {
         printerName = shop.printer_a3;
@@ -116,12 +109,40 @@ module.exports = async function handler(req, res) {
       });
     }
 
+    // 2. PROXY DOWNLOAD (fallback when shop ISP blocks direct supabase.co download)
+    if (action === 'download') {
+      const orderId = body.order_id;
+      if (!orderId) return res.status(400).json({ error: 'Missing order_id' });
+
+      const { data: ord, error: ordErr } = await sb
+        .from('orders')
+        .select('file_path')
+        .eq('id', orderId)
+        .eq('shop_id', shop.id)
+        .maybeSingle();
+
+      if (ordErr || !ord || !ord.file_path) {
+        return res.status(404).json({ error: 'Order file not found' });
+      }
+
+      const { data: blob, error: dlErr } = await sb.storage
+        .from('print-files')
+        .download(ord.file_path);
+
+      if (dlErr || !blob) {
+        return res.status(500).json({ error: 'Storage download failed' });
+      }
+
+      const buf = Buffer.from(await blob.arrayBuffer());
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Length', String(buf.length));
+      return res.status(200).send(buf);
+    }
+
     // 3. REPORT PRINT COMPLETION OR FAILURE
     if (action === 'complete') {
       const orderId = body.order_id;
-      if (!orderId) {
-        return res.status(400).json({ error: 'Missing order_id' });
-      }
+      if (!orderId) return res.status(400).json({ error: 'Missing order_id' });
 
       const success = Boolean(body.success);
       const patch = success
@@ -134,10 +155,7 @@ module.exports = async function handler(req, res) {
         .eq('id', orderId)
         .eq('shop_id', shop.id);
 
-      if (upErr) {
-        return res.status(500).json({ error: upErr.message });
-      }
-
+      if (upErr) return res.status(500).json({ error: upErr.message });
       return res.status(200).json({ ok: true, status: patch.status });
     }
 

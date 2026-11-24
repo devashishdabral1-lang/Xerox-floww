@@ -103,15 +103,17 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceKey) {
-    return res.status(500).json({ error: 'Server config missing (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)' });
-  }
-
-  const sb = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
-
   try {
+    const supabaseUrl = (process.env.SUPABASE_URL || '').trim();
+    const serviceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+    if (!supabaseUrl || !serviceKey) {
+      return res.status(500).json({ error: 'Server config missing (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)' });
+    }
+    if (!supabaseUrl.startsWith('https://')) {
+      return res.status(500).json({ error: 'SUPABASE_URL galat hai (https:// se shuru hona chahiye).' });
+    }
+
+    const sb = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
     const {
       shop_id,
       file_path,

@@ -37,6 +37,7 @@ input[type=checkbox]{accent-color:var(--accent)}
 .toggle span::after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;background:#ececec;border-radius:50%;transition:transform .4s var(--spring),background .3s}
 .toggle input:checked+span{background:var(--accent)}
 .toggle input:checked+span::after{transform:translateX(20px);background:#0a0a0a}
+.toggle input:disabled+span{opacity:.4;cursor:not-allowed}
 details>summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px}
 details>summary::-webkit-details-marker{display:none}
 details>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .35s var(--ease),border-color .2s;flex:none;margin-top:-3px}
@@ -100,10 +101,10 @@ section{background:linear-gradient(180deg,var(--card2),var(--card));border:1px s
       <h2>1. File chuno</h2>
       <label class="drop">
         <input type="file" id="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
-        Tap karke PDF, JPG ya PNG chuno<br><small>Max 30 MB</small>
+        Tap karke PDF, JPG ya PNG chuno<br><small>Max 30 MB · Pages server par verify honge</small>
         <div class="fname" id="fname"></div>
       </label>
-      <div class="row"><span id="pgLabel">Total pages</span><input class="num" id="pages" type="number" min="1" max="1000" value="1" inputmode="numeric" readonly></div>
+      <div class="row"><span id="pgLabel">Estimated pages</span><input class="num" id="pages" type="number" min="1" max="1000" value="0" inputmode="numeric" readonly></div>
     </section>
 
     <section>
@@ -114,14 +115,16 @@ section{background:linear-gradient(180deg,var(--card2),var(--card));border:1px s
       <div class="opts"><button class="opt" data-g="paper" data-v="A4" aria-pressed="true">A4</button><button class="opt" data-g="paper" data-v="A3" aria-pressed="false">A3</button></div>
       <span class="lbl">Pages per sheet</span>
       <div class="opts"><button class="opt" data-g="pps" data-v="1" aria-pressed="true">1</button><button class="opt" data-g="pps" data-v="2" aria-pressed="false">2</button><button class="opt" data-g="pps" data-v="4" aria-pressed="false">4</button></div>
-      <div class="row"><div><strong>Double side</strong><div class="sub" style="margin:0">Dono taraf print</div></div>
-        <label class="toggle"><input type="checkbox" id="dbl" aria-label="Double side"><span></span></label></div>
+      <div class="row" id="dblRow">
+        <div><strong>Double side</strong><div class="sub" id="dblNote" style="margin:0">Dono taraf print</div></div>
+        <label class="toggle"><input type="checkbox" id="dbl" aria-label="Double side"><span></span></label>
+      </div>
       <div class="row"><strong>Copies</strong>
         <div class="stepper"><button id="minus" aria-label="Kam karo">−</button><strong id="copies" style="min-width:24px;text-align:center">1</strong><button id="plus" aria-label="Badhao">+</button></div></div>
       <div class="bill" aria-live="polite">
         <p><span>Sheets</span><span id="sheets">0</span></p>
         <p><span>Rate</span><span id="rate">-</span></p>
-        <p class="total"><span>Total</span><span id="total">₹0</span></p>
+        <p class="total"><span>Estimated Total</span><span id="total">₹0</span></p>
       </div>
     </section>
 
@@ -159,19 +162,34 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { pe
 let shop = null, file = null, pages = 0, orderId = null, timer = null;
 const st = { colour: 'bw', paper: 'A4', pps: 1, copies: 1, dbl: false };
 
+/* Fix #6: localStorage with 2-hour TTL so returning from UPI apps never loses the ticket */
+const TICKET_TTL = 2 * 3600 * 1000;
 const store = {
-  get() { try { return JSON.parse(sessionStorage.getItem('xf_ticket')); } catch (e) { return null; } },
-  set(v) { try { sessionStorage.setItem('xf_ticket', JSON.stringify(v)); } catch (e) {} },
-  clear() { try { sessionStorage.removeItem('xf_ticket'); } catch (e) {} }
+  key(slug) { return 'xf_ticket_' + (slug || ''); },
+  get(slug) {
+    try {
+      const raw = JSON.parse(localStorage.getItem(this.key(slug)));
+      if (!raw || !raw.id || (Date.now() - (raw.savedAt || 0)) > TICKET_TTL) {
+        this.clear(slug);
+        return null;
+      }
+      return raw;
+    } catch (e) { return null; }
+  },
+  set(slug, id) {
+    try { localStorage.setItem(this.key(slug), JSON.stringify({ id, slug, savedAt: Date.now() })); } catch (e) {}
+  },
+  clear(slug) {
+    try { localStorage.removeItem(this.key(slug)); } catch (e) {}
+  }
 };
-try { localStorage.removeItem('xf_last_order'); } catch (e) {}   // purana data hatao
 
 function slugFromUrl() {
   const m = location.pathname.match(/\/s\/([^\/]+)/);
   return m ? decodeURIComponent(m[1]) : new URLSearchParams(location.search).get('s');
 }
 
-/* ---------- Bill ---------- */
+/* ---------- Estimated Bill (Final price is always recalculated on /api/prepare-order) ---------- */
 function calc() {
   const sides = Math.ceil(pages / st.pps);
   const sheets = st.dbl ? Math.ceil(sides / 2) : sides;
@@ -196,9 +214,8 @@ document.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () =>
 $('dbl').addEventListener('change', e => { st.dbl = e.target.checked; update(); });
 $('minus').addEventListener('click', () => { st.copies = Math.max(1, st.copies - 1); update(); });
 $('plus').addEventListener('click', () => { st.copies = Math.min(50, st.copies + 1); update(); });
-$('pages').addEventListener('input', e => { pages = Math.max(0, Math.min(1000, parseInt(e.target.value, 10) || 0)); update(); });
 
-/* ---------- File + page count ---------- */
+/* ---------- File + client preview page count (readonly; server verifies true count) ---------- */
 async function countPages(f) {
   if (f.type.startsWith('image/')) return 1;
   try {
@@ -208,36 +225,54 @@ async function countPages(f) {
 }
 $('file').addEventListener('change', async e => {
   const f = e.target.files[0];
-  file = null; pages = 0; $('fname').textContent = ''; $('msg').textContent = '';
+  file = null; pages = 0; $('fname').textContent = ''; $('msg').textContent = ''; $('pages').value = 0;
   if (!f) return update();
   const okType = /^(application\/pdf|image\/jpeg|image\/png)$/.test(f.type);
   if (!okType) { $('msg').textContent = 'Sirf PDF, JPG ya PNG file chalegi.'; e.target.value = ''; return update(); }
   if (f.size > 30 * 1024 * 1024) { $('msg').textContent = 'File 30 MB se badi hai.'; e.target.value = ''; return update(); }
-  file = f; $('fname').textContent = f.name;
   const n = await countPages(f);
-  const manual = n === 0;
-  pages = manual ? 1 : n;
+  if (n === 0) {
+    $('msg').textContent = 'Ye PDF password-protected ya kharab lag rahi hai. Bina password wali PDF upload karein.';
+    e.target.value = '';
+    return update();
+  }
+  file = f; pages = n;
+  $('fname').textContent = f.name;
   $('pages').value = pages;
-  $('pages').readOnly = !manual;
-  $('pgLabel').textContent = manual ? 'Pages (khud likhein)' : 'Total pages (apne aap)';
+  $('pgLabel').textContent = 'Total pages (server verify karega)';
   update();
 });
 
-/* ---------- Order ---------- */
+/* ---------- Order via Vercel /api/prepare-order (Fixes #3 & #4) ---------- */
 $('payBtn').addEventListener('click', async () => {
-  const btn = $('payBtn'); btn.disabled = true; btn.textContent = 'Bhej rahe hain...'; $('msg').textContent = '';
+  const btn = $('payBtn'); btn.disabled = true; btn.textContent = 'File verify ho rahi hai...'; $('msg').textContent = '';
   try {
     const safe = file.name.replace(/[^A-Za-z0-9._-]+/g, '_').slice(-80);
     const uid = (crypto.randomUUID && crypto.randomUUID()) || (Date.now() + '-' + Math.random().toString(36).slice(2));
-    const path = `${shop.id}/${uid}-${safe}`;
+    const path = `${shop.id}/raw-${uid}-${safe}`;
     const up = await sb.storage.from('print-files').upload(path, file, { contentType: file.type, upsert: false });
     if (up.error) throw up.error;
-    const { data, error } = await sb.rpc('create_order', {
-      p_shop_id: shop.id, p_file_name: file.name, p_file_path: path, p_pages: pages,
-      p_colour: st.colour, p_paper: st.paper, p_pps: st.pps, p_double: st.dbl, p_copies: st.copies
+
+    const resp = await fetch('/api/prepare-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        shop_id: shop.id,
+        file_path: path,
+        file_name: file.name,
+        content_type: file.type,
+        colour: st.colour,
+        paper: st.paper,
+        pps: st.pps,
+        double_sided: st.dbl,
+        copies: st.copies,
+        payment_mode: 'cash'
+      })
     });
-    if (error) throw error;
-    store.set({ id: data.order_id, slug: shop.slug });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Order verify nahi ho paya');
+
+    store.set(shop.slug, data.order_id);
     openTicket(data.order_id);
   } catch (err) {
     $('msg').textContent = 'Order nahi gaya: ' + (err.message || 'internet check karein');
@@ -256,7 +291,10 @@ async function pollStatus() {
   $('tamt').textContent = '₹' + Number(data.amount);
   $('tstate').textContent = ['Order mil gaya.', 'Print ho raha hai...', 'Aapka print ready hai. Counter se le lein.', 'Delivered. Dhanyavaad!'][cur];
   [...$('steps').children].forEach((d, i) => { d.className = (i < cur || cur === 3) ? 'done' : (i === cur ? 'now' : ''); });
-  if (cur === 3) clearInterval(timer);
+  if (cur === 3) {
+    clearInterval(timer);
+    store.clear(shop.slug);
+  }
   return true;
 }
 async function openTicket(id) {
@@ -264,8 +302,8 @@ async function openTicket(id) {
   if (await pollStatus()) timer = setInterval(pollStatus, 4000);
 }
 function backToOrder() {
-  clearInterval(timer); store.clear(); orderId = null; file = null; pages = 0;
-  $('file').value = ''; $('fname').textContent = ''; $('pages').value = 1; $('pages').readOnly = true;
+  clearInterval(timer); store.clear(shop.slug); orderId = null; file = null; pages = 0;
+  $('file').value = ''; $('fname').textContent = ''; $('pages').value = 0;
   $('payBtn').textContent = 'Order bhejo'; update(); show('orderView');
 }
 $('newBtn').addEventListener('click', backToOrder);
@@ -282,12 +320,19 @@ $('newBtn').addEventListener('click', backToOrder);
   document.title = shop.name + ' – Print order';
   if (!shop.is_open) return fail('Abhi order band hai', 'Ye dukaan abhi online order nahi le rahi. Counter par baat karein.');
   if (shop.at_limit) return fail('Online orders abhi band hain', 'Ye dukaan is mahine ke online orders ki limit tak pahunch gayi hai. Counter par baat karein.');
+
+  // Disable double-side option if shop printer does not support auto-duplex (#5)
+  if (shop.supports_duplex === false) {
+    $('dbl').checked = false;
+    $('dbl').disabled = true;
+    st.dbl = false;
+    $('dblNote').textContent = 'Is dukaan par sirf single-side printer hai';
+  }
+
   update();
-  const nav = (performance.getEntriesByType('navigation')[0] || {}).type;
-  const last = store.get();
-  const restore = last && last.slug === slug && (nav === 'reload' || nav === 'back_forward');
-  if (restore) openTicket(last.id);
-  else { store.clear(); show('orderView'); }
+  const last = store.get(slug);
+  if (last && last.id) openTicket(last.id);
+  else show('orderView');
 })();
 </script>
 </body>

@@ -98,6 +98,21 @@ a{color:var(--accent)}
 .search{flex:0 1 230px;margin:0;padding:8px 13px;border:1px solid var(--line);border-radius:999px;font:inherit;font-size:13.5px;background:#fff;color:var(--ink)}
 .search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
 
+
+/* Physical Tray Stack Visualizer */
+.tray-strip{
+  display:flex;align-items:center;gap:10px;overflow-x:auto;padding:10px 14px;margin-bottom:14px;
+  background:#fff;border:1px solid var(--line);border-radius:12px;scrollbar-width:none;
+}
+.tray-strip::-webkit-scrollbar{display:none}
+.tray-lbl{font:700 12px "Sora",sans-serif;color:var(--ink2);white-space:nowrap;flex:none}
+.tray-item{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;white-space:nowrap;flex:none;
+  font-size:12.5px;font-weight:600;background:var(--surface);border:1px solid var(--line);color:var(--ink);
+}
+.tray-item.top{background:var(--ok-soft);border-color:var(--ok-line);color:var(--ok-dark)}
+.tray-item small{font-weight:500;color:var(--muted)}
+
 /* 3-Column Live Kanban Board matching Mockup */
 .kanban{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start}
 .kcol{
@@ -362,6 +377,7 @@ input[type=checkbox]{accent-color:var(--accent)}
           <input class="search" id="search" type="search" placeholder="Ticket # ya file naam..." aria-label="Search orders">
         </div>
         <div class="bar"><div class="tabs" id="tabs" role="group" aria-label="Order status"></div></div>
+        <div class="tray-strip hidden" id="trayStrip"></div>
         <div class="kanban" id="list"></div>
       </div>
 
@@ -1137,7 +1153,17 @@ function renderList() {
     setStatus(id, b.dataset.a === 'undo' ? 'ready' : NEXT[o.status]);
   }));
 }
-function render() { renderStats(); renderTabs(); renderList(); }
+function renderTray() {
+  const el = $('trayStrip'); if (!el) return;
+  // Most recently printed sits on TOP of the physical printer output tray
+  const printed = orders.filter(o => o.status === 'ready' || o.status === 'printing');
+  if (!printed.length) { el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  el.innerHTML = `<span class="tray-lbl">Tray Stack (Top → Bottom):</span>` + printed.slice(0, 8).map((o, i) =>
+    `<span class="tray-item${i === 0 ? ' top' : ''}">${i === 0 ? 'TOP ' : ''}#${pad(o.ticket_no)} <small>${o.sheets * o.copies} sh</small></span>`
+  ).join('');
+}
+function render() { renderStats(); renderTabs(); renderTray(); renderList(); }
 $('search').addEventListener('input', e => { query = e.target.value; renderList(); });
 
 

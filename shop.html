@@ -3,147 +3,338 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Print order</title>
-<meta name="theme-color" content="#0a0a0a">
+<title>shop.html</title>
+<meta name="theme-color" content="#F1F5F9">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 
 <style>
-:root{--paper:#0a0a0a;--card:#141414;--card2:#1b1b1b;--ink:#ececec;--muted:#8b8b8b;--line:#272727;--accent:#9de24f;--ok:#2dd4a7;--warn:#f5b942;--bad:#ff6b5e;--ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.56,.64,1);color-scheme:dark}
-*{box-sizing:border-box}html,body{margin:0}
-body{background-color:var(--paper);background-image:radial-gradient(900px 420px at 50% -140px,rgba(157,226,79,.11),transparent 70%),radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:auto,24px 24px;background-attachment:fixed;color:var(--ink);font:15.5px/1.55 "DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
-h1,h2,.shop,.ticket,.stat b,.amount,.tno,.name,.center h2{font-family:"Sora","DM Sans",system-ui,sans-serif}
-a{color:var(--accent)}
+:root{
+  --bg:#F1F5F9;--card:#FFFFFF;--surface:#F8FAFC;--ink:#0F172A;--ink2:#334155;--muted:#64748B;--line:#E2E8F0;
+  --accent:#2563EB;--accent-hover:#1D4ED8;--accent-soft:#EFF6FF;--accent-line:#BFDBFE;
+  --ok:#059669;--ok-soft:#ECFDF5;--ok-line:#A7F3D0;
+  --warn:#D97706;--warn-soft:#FFFBEB;--warn-line:#FDE68A;
+  --bad:#DC2626;--bad-soft:#FEF2F2;
+  --ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.56,.64,1);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--ink);
+  font:15px/1.55 "DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  padding:env(safe-area-inset-top,0px) 0 calc(env(safe-area-inset-bottom,0px) + 16px);
+}
+h1,h2,.tno,.total-val{font-family:"Sora","DM Sans",system-ui,sans-serif}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
 .hidden{display:none!important}
-.sub{color:var(--muted);margin:5px 0 0;font-size:14px}
-@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-@keyframes ping{0%{box-shadow:0 0 0 0 rgba(45,212,167,.55)}100%{box-shadow:0 0 0 9px rgba(45,212,167,0)}}
-::selection{background:var(--accent);color:#0a0a0a}
-.f{display:block;margin-top:14px;font-size:13.5px;color:var(--muted)}
-.f input,.search,.num{display:block;width:100%;margin-top:6px;padding:12px 14px;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:12px;background:#0e0e0e;color:var(--ink);transition:border-color .2s,box-shadow .25s}
-.f input:focus,.search:focus,.num:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(157,226,79,.13)}
-input[type=checkbox]{accent-color:var(--accent)}
-.btn{border:0;border-radius:12px;cursor:pointer;background:var(--accent);color:#0a0a0a;font:700 15px/1 "Sora",system-ui,sans-serif;letter-spacing:-.01em;transition:transform .25s var(--ease),box-shadow .3s,background .25s,opacity .2s}
-.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 30px -10px rgba(157,226,79,.6)}
-.btn:active:not(:disabled){transform:scale(.97);box-shadow:none}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.link{background:none;border:0;padding:4px 2px;color:var(--accent);font:inherit;font-size:14px;cursor:pointer;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s}
-.link:hover{border-bottom-color:var(--accent)}
-.msg{font-size:14px;min-height:1.3em;margin:12px 0 0;color:var(--bad)}.msg.ok{color:var(--accent)}
-.toggle{position:relative;width:48px;height:28px;flex:none;display:inline-block}
-.toggle input{opacity:0;width:0;height:0;position:absolute}
-.toggle span{position:absolute;inset:0;background:#2a2a2a;border-radius:999px;transition:background .3s;cursor:pointer}
-.toggle span::after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;background:#ececec;border-radius:50%;transition:transform .4s var(--spring),background .3s}
-.toggle input:checked+span{background:var(--accent)}
-.toggle input:checked+span::after{transform:translateX(20px);background:#0a0a0a}
-.toggle input:disabled+span{opacity:.4;cursor:not-allowed}
-details>summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px}
-details>summary::-webkit-details-marker{display:none}
-details>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .35s var(--ease),border-color .2s;flex:none;margin-top:-3px}
-details[open]>summary::after{transform:rotate(225deg);border-color:var(--accent)}
-details[open]>*:not(summary){animation:rise .4s var(--ease)}
-input:focus-visible,button:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.sub{color:var(--muted);margin:4px 0 0;font-size:13.5px}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes pulseRing{0%{box-shadow:0 0 0 0 rgba(37,99,235,.4)}100%{box-shadow:0 0 0 10px rgba(37,99,235,0)}}
 
-.wrap{max-width:500px;margin:0 auto;padding:34px 20px 56px}
-header{padding-bottom:22px;margin-bottom:22px;border-bottom:1px solid var(--line);animation:rise .7s var(--ease) both}
-h1{font-weight:700;font-size:32px;line-height:1.1;margin:0;letter-spacing:-.03em;display:flex;align-items:center;gap:12px}
-h1::before{content:"";width:14px;height:14px;border-radius:5px 50% 50% 50%;background:var(--accent);box-shadow:0 0 22px rgba(157,226,79,.7);transform:rotate(-20deg);flex:none}
-h2{font-weight:600;font-size:17px;line-height:1.3;margin:0 0 14px;letter-spacing:-.02em}
-section{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:16px}
-#orderView>section,#ticketView>*{animation:rise .7s var(--ease) both}
-#orderView>section:nth-child(2){animation-delay:.1s}
-#orderView>.btn{animation:rise .7s .2s var(--ease) both}
-.center{text-align:center;padding:60px 10px}
-.drop{display:block;text-align:center;padding:30px 16px;border:1.5px dashed #3a3a3a;border-radius:14px;cursor:pointer;color:var(--muted);background:#0e0e0e;transition:all .35s var(--ease)}
+.wrap{max-width:480px;margin:0 auto;padding:18px 16px 140px}
+
+/* Header */
+header{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:8px 2px 18px;
+}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand-mark{
+  width:38px;height:38px;border-radius:11px;background:var(--accent);color:#fff;
+  display:grid;place-items:center;flex:none;box-shadow:0 6px 16px -6px rgba(37,99,235,.55);
+}
+.brand-mark svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+h1{font-weight:700;font-size:20px;line-height:1.15;margin:0;letter-spacing:-.025em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand-sub{font-size:12.5px;color:var(--muted);margin:2px 0 0}
+
+/* Cards */
+section{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  padding:18px;margin-bottom:14px;
+  box-shadow:0 1px 3px rgba(15,23,42,.04),0 6px 18px -12px rgba(15,23,42,.08);
+  animation:rise .45s var(--ease) both;
+}
+h2{font-weight:700;font-size:15px;line-height:1.3;margin:0 0 12px;letter-spacing:-.015em;color:var(--ink)}
+
+/* Upload dropzone & compact file card */
+.drop{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  text-align:center;padding:24px 16px;border:1.5px dashed #CBD5E1;border-radius:14px;
+  cursor:pointer;color:var(--ink2);background:var(--surface);
+  transition:border-color .2s,background .2s;
+}
 .drop input{position:absolute;width:1px;height:1px;opacity:0}
-.drop:focus-within,.drop:hover{border-color:var(--accent);color:var(--ink);background:rgba(157,226,79,.05);transform:translateY(-2px)}
-.fname{margin-top:10px;font-weight:600;word-break:break-all;color:var(--accent)}
-.lbl{display:block;margin-top:18px;font-size:13.5px;color:var(--muted)}
-.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.opt{flex:1 1 auto;min-width:64px;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:#0e0e0e;color:var(--muted);font:inherit;cursor:pointer;transition:all .3s var(--ease)}
-.opt:hover{border-color:#444;color:var(--ink)}
-.opt:active{transform:scale(.96)}
-.opt[aria-pressed=true]{background:var(--accent);color:#0a0a0a;border-color:var(--accent);font-weight:600}
-.row{display:flex;align-items:center;justify-content:space-between;margin-top:18px;gap:12px}
-.num{width:88px;margin:0;padding:9px;text-align:center}
-.stepper{display:flex;align-items:center;gap:14px}
-.stepper button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#0e0e0e;color:var(--ink);font:20px/1 inherit;cursor:pointer;transition:all .3s var(--ease)}
-.stepper button:hover{border-color:var(--accent);color:var(--accent)}
-.stepper button:active{transform:scale(.88)}
-.bill{border-top:1px dashed #333;margin-top:22px;padding-top:16px}
-.bill p{display:flex;justify-content:space-between;margin:6px 0;color:var(--muted);font-size:14px}
-.bill .total{color:var(--ink);font-size:20px;font-weight:700;font-family:"Sora",sans-serif;margin-top:12px}
-.bill .total span:last-child{color:var(--accent)}
-.btn{width:100%;margin-top:6px;padding:17px;font-size:17px}
-.btn.alt{background:var(--ink)}
-.note{font-size:12.5px;color:var(--muted);margin:12px 0 0;text-align:center}
-.tno{font-weight:700;font-size:72px;line-height:1;color:var(--accent);margin:12px 0;letter-spacing:-.04em;text-shadow:0 0 50px rgba(157,226,79,.4)}
-.steps{display:flex;margin-top:26px;font-size:13px;color:var(--muted)}
-.steps div{flex:1;text-align:center}
-.steps div::before{content:"";display:block;width:12px;height:12px;border-radius:50%;margin:0 auto 8px;background:#2a2a2a;transition:background .4s}
-.steps .done{color:var(--ink)}.steps .done::before{background:var(--ok)}
-.steps .now{color:var(--accent);font-weight:600}.steps .now::before{background:var(--accent);animation:ping2 1.8s infinite}
-@keyframes ping2{0%{box-shadow:0 0 0 0 rgba(157,226,79,.6)}100%{box-shadow:0 0 0 10px rgba(157,226,79,0)}}
+.drop:hover,.drop:focus-within{border-color:var(--accent);background:var(--accent-soft)}
+.drop-ic{
+  width:42px;height:42px;border-radius:12px;background:#fff;border:1px solid var(--line);
+  display:grid;place-items:center;color:var(--accent);margin-bottom:4px;
+}
+.drop-ic svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2}
+.drop strong{font-size:14.5px;color:var(--ink)}
+.drop small{font-size:12.5px;color:var(--muted)}
+
+.file-card{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;
+  border:1px solid var(--accent-line);border-radius:14px;background:var(--accent-soft);
+}
+.file-badge{
+  width:40px;height:40px;border-radius:10px;background:#fff;border:1px solid var(--accent-line);
+  color:var(--accent);font:700 11px/1 "Sora",sans-serif;display:grid;place-items:center;flex:none;
+}
+.file-meta{flex:1;min-width:0}
+.fname{font-weight:600;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fsub{font-size:12.5px;color:var(--muted);margin-top:2px;display:flex;gap:8px;align-items:center}
+.pg-pill{
+  font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;
+  background:#fff;border:1px solid var(--accent-line);color:var(--accent);white-space:nowrap;
+}
+.file-change{
+  border:0;background:transparent;color:var(--accent);font:600 13px "DM Sans",sans-serif;
+  cursor:pointer;padding:6px 8px;border-radius:8px;flex:none;
+}
+.file-change:hover{background:rgba(37,99,235,.08)}
+
+/* Segmented pills & inputs */
+.lbl{display:block;margin-top:16px;font-size:13px;font-weight:600;color:var(--ink2)}
+.lbl:first-of-type{margin-top:0}
+.opts{
+  display:flex;gap:6px;margin-top:7px;padding:4px;
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;
+}
+.opt{
+  flex:1 1 0;padding:9px 10px;border:1px solid transparent;border-radius:9px;
+  background:transparent;color:var(--muted);font:600 13.5px/1.2 "DM Sans",sans-serif;
+  cursor:pointer;transition:all .2s var(--ease);text-align:center;
+}
+.opt:hover{color:var(--ink)}
+.opt[aria-pressed=true]{
+  background:#fff;color:var(--accent);border-color:var(--accent-line);
+  box-shadow:0 2px 6px rgba(15,23,42,.06);
+}
+.txt{
+  display:block;width:100%;margin-top:8px;padding:11px 13px;font:inherit;font-size:15px;
+  border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);
+  transition:border-color .2s,box-shadow .2s;
+}
+.txt:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.14)}
+
+.row{display:flex;align-items:center;justify-content:space-between;margin-top:16px;gap:12px}
+.row strong{font-size:14px;color:var(--ink)}
+.toggle{position:relative;width:46px;height:26px;flex:none;display:inline-block}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle span{position:absolute;inset:0;background:#CBD5E1;border-radius:999px;transition:background .25s;cursor:pointer}
+.toggle span::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .3s var(--spring)}
+.toggle input:checked+span{background:var(--accent)}
+.toggle input:checked+span::after{transform:translateX(20px)}
+.toggle input:disabled+span{opacity:.45;cursor:not-allowed}
+
+.stepper{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px}
+.stepper button{
+  width:32px;height:32px;border-radius:8px;border:0;background:#fff;color:var(--ink);
+  font:700 18px/1 inherit;cursor:pointer;box-shadow:0 1px 2px rgba(15,23,42,.06);
+  transition:background .15s,color .15s;
+}
+.stepper button:hover{background:var(--accent-soft);color:var(--accent)}
+.stepper strong{min-width:26px;text-align:center;font-size:15px}
+
+.bill-mini{
+  display:flex;justify-content:space-between;gap:10px;
+  margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);
+  font-size:13px;color:var(--muted);
+}
+.bill-mini strong{color:var(--ink)}
+
+/* Sticky Bottom Checkout Bar */
+.sticky-bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);
+  box-shadow:0 -8px 28px -12px rgba(15,23,42,.12);
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));
+}
+.sticky-in{max-width:480px;margin:0 auto}
+.sticky-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.sticky-lbl{font-size:13px;color:var(--muted);font-weight:500}
+.total-val{font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.025em}
+.pay-row{display:grid;grid-template-columns:1.35fr 1fr;gap:8px}
+.btn{
+  border:0;border-radius:12px;cursor:pointer;padding:13px 14px;
+  background:var(--accent);color:#fff;font:700 14px/1.15 "Sora",system-ui,sans-serif;
+  transition:background .2s,transform .15s,opacity .2s;text-align:center;
+}
+.btn:hover:not(:disabled){background:var(--accent-hover)}
+.btn:active:not(:disabled){transform:scale(.98)}
+.btn:disabled{opacity:.42;cursor:not-allowed}
+.btn.outline{background:#fff;color:var(--ink);border:1.5px solid #CBD5E1;font-weight:600}
+.btn.outline:hover:not(:disabled){border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.btn.full{width:100%;padding:15px;font-size:15px}
+
+.msg{font-size:13.5px;min-height:1.2em;margin:10px 0 0;color:var(--bad);font-weight:500}
+.note{font-size:12px;color:var(--muted);margin:10px 0 0;text-align:center}
+
+/* Center & Ticket View */
+.center{text-align:center;padding:56px 12px}
+.ticket-card{text-align:center;padding:26px 20px}
+.tno{font-weight:800;font-size:64px;line-height:1;color:var(--ink);margin:8px 0 10px;letter-spacing:-.04em}
+.ticket-sub{
+  display:inline-block;font-size:12.5px;font-weight:600;color:var(--muted);
+  background:var(--surface);border:1px solid var(--line);padding:4px 12px;border-radius:999px;
+}
+.pay-pill{
+  display:inline-flex;align-items:center;gap:6px;margin-top:14px;
+  padding:7px 16px;border-radius:999px;font-weight:700;font-size:14px;
+}
+.pay-pill.upi{background:var(--ok);color:#fff}
+.pay-pill.cash{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn-line)}
+
+/* Vertical 3-Step Live Progress */
+.vsteps{text-align:left;margin:26px auto 6px;max-width:300px;display:flex;flex-direction:column;gap:0}
+.vstep{position:relative;padding:0 0 22px 36px;color:var(--muted)}
+.vstep:last-child{padding-bottom:0}
+.vstep::before{
+  content:"";position:absolute;left:10px;top:24px;bottom:2px;width:2px;background:var(--line);
+}
+.vstep:last-child::before{display:none}
+.vstep-dot{
+  position:absolute;left:0;top:2px;width:22px;height:22px;border-radius:50%;
+  background:#E2E8F0;border:2px solid #fff;box-shadow:0 0 0 1px #CBD5E1;
+  display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;
+}
+.vstep strong{display:block;font-size:14.5px;color:var(--muted);font-weight:600}
+.vstep span{display:block;font-size:12.5px;color:var(--muted)}
+.vstep.done::before{background:var(--ok)}
+.vstep.done .vstep-dot{background:var(--ok);box-shadow:0 0 0 1px var(--ok)}
+.vstep.done strong{color:var(--ink)}
+.vstep.now .vstep-dot{background:var(--accent);box-shadow:0 0 0 1px var(--accent);animation:pulseRing 1.8s infinite}
+.vstep.now strong{color:var(--accent)}
+
+@media(max-width:380px){.pay-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header><h1 id="shopName">Print order</h1><p class="sub">File upload karo, counter par sirf ticket dikhao</p></header>
+  <header>
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      </div>
+      <div style="min-width:0">
+        <h1 id="shopName">XeroxFlow</h1>
+        <p class="brand-sub">Scan · Upload · Instant Print</p>
+      </div>
+    </div>
+  </header>
 
   <div id="loadView" class="center"><p class="sub">Load ho raha hai...</p></div>
 
-  <div id="errView" class="center hidden"><h2 id="errT"></h2><p class="sub" id="errP"></p></div>
+  <div id="errView" class="center hidden"><h2 id="errT" style="font-size:20px"></h2><p class="sub" id="errP"></p></div>
 
   <div id="orderView" class="hidden">
     <section>
-      <h2>1. File chuno</h2>
-      <label class="drop">
-        <input type="file" id="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
-        Tap karke PDF, JPG ya PNG chuno<br><small>Max 30 MB · Pages server par verify honge</small>
-        <div class="fname" id="fname"></div>
+      <h2>1. Document Upload</h2>
+      <label class="drop" id="dropBox">
+        <input type="file" id="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,application/pdf,image/jpeg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation">
+        <div class="drop-ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <strong>PDF, Word (.docx), PPT ya Photo chuno</strong>
+        <small>Max 30 MB · Print ke baad file auto-delete ho jati hai</small>
       </label>
-      <div class="row"><span id="pgLabel">Estimated pages</span><input class="num" id="pages" type="number" min="1" max="1000" value="0" inputmode="numeric" readonly></div>
+
+      <div class="file-card hidden" id="fileCard">
+        <div class="file-badge" id="fileExt">PDF</div>
+        <div class="file-meta">
+          <div class="fname" id="fname"></div>
+          <div class="fsub"><span id="fsize"></span><span class="pg-pill" id="pgPill">0 Pages</span></div>
+        </div>
+        <button type="button" class="file-change" id="changeFile">Badlo</button>
+      </div>
     </section>
 
     <section>
-      <h2>2. Print settings</h2>
-      <span class="lbl" style="margin-top:0">Colour</span>
-      <div class="opts"><button class="opt" data-g="colour" data-v="bw" aria-pressed="true">Black & White</button><button class="opt" data-g="colour" data-v="color" aria-pressed="false">Colour</button></div>
-      <span class="lbl">Paper size</span>
-      <div class="opts"><button class="opt" data-g="paper" data-v="A4" aria-pressed="true">A4</button><button class="opt" data-g="paper" data-v="A3" aria-pressed="false">A3</button></div>
-      <span class="lbl">Pages per sheet</span>
-      <div class="opts"><button class="opt" data-g="pps" data-v="1" aria-pressed="true">1</button><button class="opt" data-g="pps" data-v="2" aria-pressed="false">2</button><button class="opt" data-g="pps" data-v="4" aria-pressed="false">4</button></div>
+      <h2>2. Print Settings</h2>
+
+      <span class="lbl">Print Mode</span>
+      <div class="opts">
+        <button class="opt" data-g="colour" data-v="bw" aria-pressed="true">Black &amp; White</button>
+        <button class="opt" data-g="colour" data-v="color" aria-pressed="false">Colour</button>
+      </div>
+
+      <span class="lbl">Paper Size</span>
+      <div class="opts">
+        <button class="opt" data-g="paper" data-v="A4" aria-pressed="true">A4</button>
+        <button class="opt" data-g="paper" data-v="A3" aria-pressed="false">A3</button>
+      </div>
+
+      <span class="lbl">Pages</span>
+      <div class="opts">
+        <button class="opt" data-g="rmode" data-v="all" aria-pressed="true">All Pages</button>
+        <button class="opt" data-g="rmode" data-v="custom" aria-pressed="false">Custom Range</button>
+      </div>
+      <div id="rangeWrap" class="hidden">
+        <input class="txt" id="pageRange" type="text" placeholder="jaise: 1-5, 8, 12-15" autocomplete="off">
+        <p class="sub" id="rangeHint" style="margin-top:6px">Sirf chune hue pages hi print aur bill honge.</p>
+      </div>
+
+      <span class="lbl">Pages per Sheet</span>
+      <div class="opts">
+        <button class="opt" data-g="pps" data-v="1" aria-pressed="true">1</button>
+        <button class="opt" data-g="pps" data-v="2" aria-pressed="false">2</button>
+        <button class="opt" data-g="pps" data-v="4" aria-pressed="false">4</button>
+      </div>
+
       <div class="row" id="dblRow">
-        <div><strong>Double side</strong><div class="sub" id="dblNote" style="margin:0">Dono taraf print</div></div>
+        <div><strong>Double-Sided</strong><div class="sub" id="dblNote" style="margin:0">Dono taraf print</div></div>
         <label class="toggle"><input type="checkbox" id="dbl" aria-label="Double side"><span></span></label>
       </div>
-      <div class="row"><strong>Copies</strong>
-        <div class="stepper"><button id="minus" aria-label="Kam karo">−</button><strong id="copies" style="min-width:24px;text-align:center">1</strong><button id="plus" aria-label="Badhao">+</button></div></div>
-      <div class="bill" aria-live="polite">
-        <p><span>Sheets</span><span id="sheets">0</span></p>
-        <p><span>Rate</span><span id="rate">-</span></p>
-        <p class="total"><span>Estimated Total</span><span id="total">₹0</span></p>
+
+      <div class="row">
+        <strong>Copies</strong>
+        <div class="stepper"><button type="button" id="minus" aria-label="Kam karo">−</button><strong id="copies">1</strong><button type="button" id="plus" aria-label="Badhao">+</button></div>
+      </div>
+
+      <div class="bill-mini" aria-live="polite">
+        <span>Sheets: <strong id="sheets">0</strong></span>
+        <span>Rate: <strong id="rate">-</strong></span>
       </div>
     </section>
 
-    <button class="btn" id="payBtn" disabled>Order bhejo</button>
     <p class="msg" id="msg" role="alert"></p>
-    <p class="note">Payment counter par karein (cash ya UPI). Order ke baad ticket number milega.</p>
-    <p class="note">Aapki file sirf print ke liye use hoti hai, aur delivery ke baad delete kar di jati hai.</p>
     <p class="note"><a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a> · <a href="/terms.html" target="_blank" rel="noopener">Terms</a></p>
+
+    <div class="sticky-bar">
+      <div class="sticky-in">
+        <div class="sticky-top">
+          <span class="sticky-lbl">Estimated Total</span>
+          <span class="total-val" id="total">₹0</span>
+        </div>
+        <div class="pay-row">
+          <button class="btn" id="upiBtn" disabled>Pay via UPI (Instant)</button>
+          <button class="btn outline" id="cashBtn" disabled>Pay Cash</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div id="ticketView" class="hidden">
-    <section class="center" style="padding:24px 10px">
-      <p class="sub" style="margin:0">Aapka ticket number</p>
+    <section class="ticket-card">
       <div class="tno" id="tno">#---</div>
-      <p style="margin:0">Counter par <strong id="tamt">₹0</strong> dein</p>
-      <p class="sub" id="tstate"></p>
-      <div class="steps" id="steps"><div>Received</div><div>Printing</div><div>Ready</div></div>
+      <div class="ticket-sub">Your Print Ticket</div>
+      <div><span class="pay-pill cash" id="tpayPill">Counter par ₹0 dein</span></div>
+
+      <div class="vsteps" id="steps">
+        <div class="vstep"><span class="vstep-dot">✓</span><strong>Order Received</strong><span id="s1sub">Queue mein add ho gaya</span></div>
+        <div class="vstep"><span class="vstep-dot">2</span><strong>Printing</strong><span id="s2sub">Printer par print ho raha hai</span></div>
+        <div class="vstep"><span class="vstep-dot">3</span><strong>Ready at Counter</strong><span id="s3sub">Counter se apna print le lein</span></div>
+      </div>
+
+      <p class="sub" id="tstate" style="margin-top:20px"></p>
     </section>
-    <button class="btn alt" id="newBtn">Naya order karein</button>
+    <button class="btn full" id="newBtn">Naya order karein</button>
   </div>
 </div>
 
@@ -159,29 +350,21 @@ function fail(t, p) { $('errT').textContent = t; $('errP').textContent = p; show
 if (!window.supabase) { fail('Load nahi hua', 'Internet check karein aur page refresh karein.'); throw new Error('no supabase'); }
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
 
-let shop = null, file = null, pages = 0, orderId = null, timer = null;
-const st = { colour: 'bw', paper: 'A4', pps: 1, copies: 1, dbl: false };
+let shop = null, file = null, totalPages = 0, isOfficeFile = false, orderId = null, timer = null;
+const st = { colour: 'bw', paper: 'A4', pps: 1, copies: 1, dbl: false, rmode: 'all' };
 
-/* Fix #6: localStorage with 2-hour TTL so returning from UPI apps never loses the ticket */
 const TICKET_TTL = 2 * 3600 * 1000;
 const store = {
   key(slug) { return 'xf_ticket_' + (slug || ''); },
   get(slug) {
     try {
       const raw = JSON.parse(localStorage.getItem(this.key(slug)));
-      if (!raw || !raw.id || (Date.now() - (raw.savedAt || 0)) > TICKET_TTL) {
-        this.clear(slug);
-        return null;
-      }
+      if (!raw || !raw.id || (Date.now() - (raw.savedAt || 0)) > TICKET_TTL) { this.clear(slug); return null; }
       return raw;
     } catch (e) { return null; }
   },
-  set(slug, id) {
-    try { localStorage.setItem(this.key(slug), JSON.stringify({ id, slug, savedAt: Date.now() })); } catch (e) {}
-  },
-  clear(slug) {
-    try { localStorage.removeItem(this.key(slug)); } catch (e) {}
-  }
+  set(slug, id, paid) { try { localStorage.setItem(this.key(slug), JSON.stringify({ id, slug, paid: !!paid, savedAt: Date.now() })); } catch (e) {} },
+  clear(slug) { try { localStorage.removeItem(this.key(slug)); } catch (e) {} }
 };
 
 function slugFromUrl() {
@@ -189,33 +372,73 @@ function slugFromUrl() {
   return m ? decodeURIComponent(m[1]) : new URLSearchParams(location.search).get('s');
 }
 
-/* ---------- Estimated Bill (Final price is always recalculated on /api/prepare-order) ---------- */
-function calc() {
-  const sides = Math.ceil(pages / st.pps);
-  const sheets = st.dbl ? Math.ceil(sides / 2) : sides;
-  const rate = Number(shop[(st.colour === 'bw' ? 'rate_bw_' : 'rate_color_') + st.paper.toLowerCase()]);
-  return { sheets, rate, total: sheets * rate * st.copies };
+function fmtSize(b) {
+  if (b < 1024 * 1024) return Math.max(1, Math.round(b / 1024)) + ' KB';
+  return (b / (1024 * 1024)).toFixed(1) + ' MB';
 }
+
+function countCustomPages(str, maxPg) {
+  const clean = String(str || '').trim();
+  if (!clean) return { ok: false, count: 0, err: 'Page range likhein (jaise 1-5, 8)' };
+  const set = new Set();
+  for (const raw of clean.split(',')) {
+    const p = raw.trim();
+    if (!p) continue;
+    const m = p.match(/^(\d+)(?:\s*-\s*(\d+))?$/);
+    if (!m) return { ok: false, count: 0, err: `Galat format: "${p}"` };
+    const a = parseInt(m[1], 10), b = m[2] ? parseInt(m[2], 10) : a;
+    if (a < 1 || b < a || (maxPg > 0 && b > maxPg)) {
+      return { ok: false, count: 0, err: maxPg > 0 ? `Range 1 se ${maxPg} ke beech rakhein` : 'Sahi range likhein' };
+    }
+    for (let i = a; i <= b; i++) set.add(i);
+  }
+  return set.size ? { ok: true, count: set.size, err: '' } : { ok: false, count: 0, err: 'Kam se kam 1 page chunein' };
+}
+
+function activePages() {
+  if (!file) return { ok: false, pages: 0 };
+  if (st.rmode === 'custom') {
+    const r = countCustomPages($('pageRange').value, isOfficeFile ? 0 : totalPages);
+    $('rangeHint').textContent = r.ok ? `${r.count} pages select hue hain.` : r.err;
+    $('rangeHint').style.color = r.ok ? 'var(--ok)' : 'var(--bad)';
+    return { ok: r.ok, pages: r.count };
+  }
+  return { ok: isOfficeFile || totalPages > 0, pages: totalPages };
+}
+
 function update() {
-  const c = calc();
+  const rate = shop ? Number(shop[(st.colour === 'bw' ? 'rate_bw_' : 'rate_color_') + st.paper.toLowerCase()]) : 0;
   $('copies').textContent = st.copies;
-  $('sheets').textContent = c.sheets;
-  $('rate').textContent = '₹' + c.rate + ' / sheet';
-  $('total').textContent = '₹' + c.total;
-  $('payBtn').disabled = !(file && pages > 0);
+  $('rate').textContent = '₹' + rate + ' / sheet';
+  const ap = activePages();
+  if (isOfficeFile && st.rmode === 'all') {
+    $('sheets').textContent = 'Auto';
+    $('total').textContent = 'Auto';
+  } else {
+    const sides = Math.ceil(ap.pages / st.pps);
+    const sheets = st.dbl ? Math.ceil(sides / 2) : sides;
+    $('sheets').textContent = sheets;
+    $('total').textContent = '₹' + (sheets * rate * st.copies);
+  }
+  const canSubmit = Boolean(file && ap.ok);
+  $('upiBtn').disabled = !canSubmit;
+  $('cashBtn').disabled = !canSubmit;
 }
+
 document.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll(`.opt[data-g="${b.dataset.g}"]`).forEach(x => x.setAttribute('aria-pressed', 'false'));
   b.setAttribute('aria-pressed', 'true');
   const g = b.dataset.g, v = b.dataset.v;
   st[g] = g === 'pps' ? Number(v) : v;
+  if (g === 'rmode') $('rangeWrap').classList.toggle('hidden', v !== 'custom');
   update();
 }));
+$('pageRange').addEventListener('input', update);
 $('dbl').addEventListener('change', e => { st.dbl = e.target.checked; update(); });
 $('minus').addEventListener('click', () => { st.copies = Math.max(1, st.copies - 1); update(); });
 $('plus').addEventListener('click', () => { st.copies = Math.min(50, st.copies + 1); update(); });
+$('changeFile').addEventListener('click', () => $('file').click());
 
-/* ---------- File + client preview page count (readonly; server verifies true count) ---------- */
 async function countPages(f) {
   if (f.type.startsWith('image/')) return 1;
   try {
@@ -223,34 +446,61 @@ async function countPages(f) {
     return doc.getPageCount();
   } catch (e) { return 0; }
 }
+
+function showFileUI(has) {
+  $('dropBox').classList.toggle('hidden', has);
+  $('fileCard').classList.toggle('hidden', !has);
+}
+
 $('file').addEventListener('change', async e => {
   const f = e.target.files[0];
-  file = null; pages = 0; $('fname').textContent = ''; $('msg').textContent = ''; $('pages').value = 0;
-  if (!f) return update();
-  const okType = /^(application\/pdf|image\/jpeg|image\/png)$/.test(f.type);
-  if (!okType) { $('msg').textContent = 'Sirf PDF, JPG ya PNG file chalegi.'; e.target.value = ''; return update(); }
-  if (f.size > 30 * 1024 * 1024) { $('msg').textContent = 'File 30 MB se badi hai.'; e.target.value = ''; return update(); }
+  file = null; totalPages = 0; isOfficeFile = false;
+  $('msg').textContent = '';
+  if (!f) { showFileUI(false); return update(); }
+
+  const ext = (f.name.split('.').pop() || '').toLowerCase();
+  const office = ['doc', 'docx', 'ppt', 'pptx'].includes(ext);
+  const ok = office || ['pdf', 'jpg', 'jpeg', 'png'].includes(ext) || /^(application\/pdf|image\/jpeg|image\/png)$/.test(f.type);
+  if (!ok) { $('msg').textContent = 'Sirf PDF, Word (.docx), PPT (.pptx), JPG ya PNG chalegi.'; e.target.value = ''; showFileUI(false); return update(); }
+  if (f.size > 30 * 1024 * 1024) { $('msg').textContent = 'File 30 MB se badi hai.'; e.target.value = ''; showFileUI(false); return update(); }
+
+  $('fileExt').textContent = ext.toUpperCase().slice(0, 4) || 'FILE';
+  $('fname').textContent = f.name;
+  $('fsize').textContent = fmtSize(f.size);
+
+  if (office) {
+    isOfficeFile = true; file = f;
+    $('pgPill').textContent = 'Auto PDF';
+    showFileUI(true);
+    return update();
+  }
+
   const n = await countPages(f);
   if (n === 0) {
     $('msg').textContent = 'Ye PDF password-protected ya kharab lag rahi hai. Bina password wali PDF upload karein.';
-    e.target.value = '';
-    return update();
+    e.target.value = ''; showFileUI(false); return update();
   }
-  file = f; pages = n;
-  $('fname').textContent = f.name;
-  $('pages').value = pages;
-  $('pgLabel').textContent = 'Total pages (server verify karega)';
+  file = f; totalPages = n;
+  $('pgPill').textContent = `${totalPages} ${totalPages === 1 ? 'Page' : 'Pages'}`;
+  showFileUI(true);
   update();
 });
 
-/* ---------- Order via Vercel /api/prepare-order (Fixes #3 & #4) ---------- */
-$('payBtn').addEventListener('click', async () => {
-  const btn = $('payBtn'); btn.disabled = true; btn.textContent = 'File verify ho rahi hai...'; $('msg').textContent = '';
+function setBusy(busy, mode) {
+  $('upiBtn').disabled = busy;
+  $('cashBtn').disabled = busy;
+  $('upiBtn').textContent = busy && mode === 'upi' ? 'Bhej rahe hain...' : 'Pay via UPI (Instant)';
+  $('cashBtn').textContent = busy && mode === 'cash' ? 'Bhej rahe hain...' : 'Pay Cash';
+}
+
+async function submitOrder(mode) {
+  setBusy(true, mode);
+  $('msg').textContent = '';
   try {
     const safe = file.name.replace(/[^A-Za-z0-9._-]+/g, '_').slice(-80);
     const uid = (crypto.randomUUID && crypto.randomUUID()) || (Date.now() + '-' + Math.random().toString(36).slice(2));
     const path = `${shop.id}/raw-${uid}-${safe}`;
-    const up = await sb.storage.from('print-files').upload(path, file, { contentType: file.type, upsert: false });
+    const up = await sb.storage.from('print-files').upload(path, file, { contentType: file.type || 'application/octet-stream', upsert: false });
     if (up.error) throw up.error;
 
     const resp = await fetch('/api/prepare-order', {
@@ -266,7 +516,8 @@ $('payBtn').addEventListener('click', async () => {
         pps: st.pps,
         double_sided: st.dbl,
         copies: st.copies,
-        payment_mode: 'cash'
+        page_range: st.rmode === 'custom' ? $('pageRange').value.trim() : '',
+        payment_mode: mode
       })
     });
     const rawText = await resp.text();
@@ -274,43 +525,52 @@ $('payBtn').addEventListener('click', async () => {
     try { data = JSON.parse(rawText); } catch (e) { throw new Error('Server error (' + resp.status + '): ' + rawText.slice(0, 120)); }
     if (!resp.ok) throw new Error(data.error || 'Order verify nahi ho paya');
 
-    store.set(shop.slug, data.order_id);
-    openTicket(data.order_id);
+    const isUpi = mode === 'upi';
+    store.set(shop.slug, data.order_id, isUpi);
+    setBusy(false);
+    return openTicket(data.order_id, isUpi);
   } catch (err) {
     $('msg').textContent = 'Order nahi gaya: ' + (err.message || 'internet check karein');
-    btn.disabled = false;
+    setBusy(false);
   }
-  btn.textContent = 'Order bhejo';
-});
+}
 
-/* ---------- Ticket ---------- */
+$('upiBtn').addEventListener('click', () => submitOrder('upi'));
+$('cashBtn').addEventListener('click', () => submitOrder('cash'));
+
 const IDX = { received: 0, printing: 1, ready: 2, delivered: 3 };
+let ticketPaid = false;
 async function pollStatus() {
   const { data } = await sb.rpc('get_order_status', { p_order_id: orderId });
   if (!data) { backToOrder(); return false; }
   const cur = IDX[data.status] ?? 0;
   $('tno').textContent = '#' + String(data.ticket_no).padStart(3, '0');
-  $('tamt').textContent = '₹' + Number(data.amount);
-  $('tstate').textContent = ['Order mil gaya.', 'Print ho raha hai...', 'Aapka print ready hai. Counter se le lein.', 'Delivered. Dhanyavaad!'][cur];
-  [...$('steps').children].forEach((d, i) => { d.className = (i < cur || cur === 3) ? 'done' : (i === cur ? 'now' : ''); });
-  if (cur === 3) {
-    clearInterval(timer);
-    store.clear(shop.slug);
-  }
+  const pill = $('tpayPill');
+  pill.className = 'pay-pill ' + (ticketPaid ? 'upi' : 'cash');
+  pill.textContent = ticketPaid ? `✓ UPI Paid · ₹${Number(data.amount)}` : `Counter par ₹${Number(data.amount)} dein`;
+  $('tstate').textContent = [
+    ticketPaid ? 'Payment mil gaya! Automatic print queue mein hai...' : 'Order mil gaya. Counter par cash dein.',
+    'Printer par print ho raha hai...',
+    'Aapka print ready hai! Counter se le lein.',
+    'Delivered. Dhanyavaad!'
+  ][cur];
+  [...$('steps').children].forEach((d, i) => {
+    d.className = 'vstep ' + ((i < cur || cur === 3) ? 'done' : (i === cur ? 'now' : ''));
+  });
+  if (cur === 3) { clearInterval(timer); store.clear(shop.slug); }
   return true;
 }
-async function openTicket(id) {
-  orderId = id; show('ticketView'); clearInterval(timer);
+async function openTicket(id, paid) {
+  orderId = id; ticketPaid = !!paid; show('ticketView'); clearInterval(timer);
   if (await pollStatus()) timer = setInterval(pollStatus, 4000);
 }
 function backToOrder() {
-  clearInterval(timer); store.clear(shop.slug); orderId = null; file = null; pages = 0;
-  $('file').value = ''; $('fname').textContent = ''; $('pages').value = 0;
-  $('payBtn').textContent = 'Order bhejo'; update(); show('orderView');
+  clearInterval(timer); store.clear(shop.slug); orderId = null; file = null; totalPages = 0; isOfficeFile = false;
+  $('file').value = ''; $('pageRange').value = ''; showFileUI(false);
+  setBusy(false); update(); show('orderView');
 }
 $('newBtn').addEventListener('click', backToOrder);
 
-/* ---------- Start ---------- */
 (async () => {
   const slug = slugFromUrl();
   if (!slug) return fail('Link galat hai', 'QR code dobara scan karein.');
@@ -319,21 +579,18 @@ $('newBtn').addEventListener('click', backToOrder);
   if (!data) return fail('Dukaan nahi mili', 'Link ya QR code galat hai.');
   shop = data;
   $('shopName').textContent = shop.name;
-  document.title = shop.name + ' – Print order';
+  document.title = shop.name + ' – XeroxFlow';
   if (!shop.is_open) return fail('Abhi order band hai', 'Ye dukaan abhi online order nahi le rahi. Counter par baat karein.');
   if (shop.at_limit) return fail('Online orders abhi band hain', 'Ye dukaan is mahine ke online orders ki limit tak pahunch gayi hai. Counter par baat karein.');
 
-  // Disable double-side option if shop printer does not support auto-duplex (#5)
   if (shop.supports_duplex === false) {
-    $('dbl').checked = false;
-    $('dbl').disabled = true;
-    st.dbl = false;
+    $('dbl').checked = false; $('dbl').disabled = true; st.dbl = false;
     $('dblNote').textContent = 'Is dukaan par sirf single-side printer hai';
   }
 
   update();
   const last = store.get(slug);
-  if (last && last.id) openTicket(last.id);
+  if (last && last.id) openTicket(last.id, last.paid);
   else show('orderView');
 })();
 </script>

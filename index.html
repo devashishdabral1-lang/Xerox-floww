@@ -4,50 +4,148 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>index.html</title>
-<meta name="theme-color" content="#F1F5F9">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --bg:#F1F5F9;--card:#FFFFFF;--surface:#F8FAFC;--ink:#0F172A;--ink2:#334155;--muted:#64748B;--line:#E2E8F0;
+  --bg:#EFF3F8;--card:#FFFFFF;--surface:#F8FAFC;--ink:#0F172A;--ink2:#334155;--muted:#64748B;--line:#E2E8F0;
   --accent:#2563EB;--accent-hover:#1D4ED8;--accent-soft:#EFF6FF;--accent-line:#BFDBFE;
-  --ok:#059669;--ok-soft:#ECFDF5;--ok-line:#A7F3D0;
+  --ok:#10B981;--ok-dark:#059669;--ok-soft:#ECFDF5;--ok-line:#A7F3D0;
   --warn:#D97706;--warn-soft:#FFFBEB;--warn-line:#FDE68A;
   --bad:#DC2626;--bad-soft:#FEF2F2;
   --ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.56,.64,1);
   color-scheme:light;
 }
-*{box-sizing:border-box}html,body{margin:0}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
 body{
   background:var(--bg);color:var(--ink);
-  font:15px/1.55 "DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font:14.5px/1.5 "DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   -webkit-font-smoothing:antialiased;
-  padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);
 }
-h1,h2,.shop,.ticket,.stat b,.amount,.center h2{font-family:"Sora","DM Sans",system-ui,sans-serif}
+h1,h2,.shop,.ticket,.kpi b,.amount,.center h2{font-family:"Sora","DM Sans",system-ui,sans-serif}
 a{color:var(--accent)}
 .hidden{display:none!important}
-.sub{color:var(--muted);margin:4px 0 0;font-size:13.5px}
-@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@keyframes ping{0%{box-shadow:0 0 0 0 rgba(5,150,105,.5)}100%{box-shadow:0 0 0 8px rgba(5,150,105,0)}}
+.sub{color:var(--muted);margin:2px 0 0;font-size:13px}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}100%{box-shadow:0 0 0 8px rgba(16,185,129,0)}}
+@keyframes slide{0%{transform:translateX(-60%)}100%{transform:translateX(160%)}}
 
-.wrap{max-width:1160px;margin:0 auto;padding:22px 18px 70px;animation:rise .45s var(--ease) both}
-
-/* Forms & Inputs */
-.f{display:block;margin-top:14px;font-size:13px;font-weight:600;color:var(--ink2)}
-.f input,.f select,.search{
-  display:block;width:100%;margin-top:6px;padding:11px 13px;font:inherit;font-size:15px;
-  border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);
-  transition:border-color .2s,box-shadow .2s;
+/* Shell: Left Icon Sidebar + Main Area */
+.shell{display:grid;grid-template-columns:64px 1fr;min-height:100vh}
+.rail{
+  background:#fff;border-right:1px solid var(--line);
+  display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:10px;
+  position:sticky;top:0;height:100vh;z-index:20;
 }
-.f input:focus,.f select:focus,.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.14)}
-input[type=checkbox]{accent-color:var(--accent)}
+.rail-logo{
+  width:40px;height:40px;border-radius:11px;background:var(--ink);color:#fff;
+  display:grid;place-items:center;margin-bottom:10px;
+}
+.rail-logo svg,.rail-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rail-btn{
+  width:42px;height:42px;border-radius:11px;border:0;background:transparent;color:var(--muted);
+  display:grid;place-items:center;cursor:pointer;transition:all .18s;
+}
+.rail-btn:hover{background:var(--surface);color:var(--ink)}
+.rail-btn.active{background:var(--accent-soft);color:var(--accent)}
+.rail-spacer{flex:1}
 
+.main{display:flex;flex-direction:column;min-width:0}
+
+/* Integrated White Top Header Bar matching Mockup */
+.topbar{
+  background:#fff;border-bottom:1px solid var(--line);
+  padding:15px 26px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;
+}
+.top-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.shop{font-weight:700;font-size:20px;line-height:1.15;margin:0;letter-spacing:-.025em;color:var(--ink)}
+.shop span{color:var(--accent)}
+.agent-pill{
+  display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;
+  padding:5px 12px;border-radius:999px;white-space:nowrap;
+}
+.agent-pill::before{content:"";width:7px;height:7px;border-radius:50%;flex:none}
+.agent-pill.on{background:var(--ok-soft);color:var(--ok-dark);border:1px solid var(--ok-line)}
+.agent-pill.on::before{background:var(--ok);animation:ping 1.8s infinite}
+.agent-pill.off{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn-line)}
+.agent-pill.off::before{background:var(--warn)}
+
+.top-right{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.kpi small{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.kpi b{display:block;font-size:20px;font-weight:800;color:var(--ink);line-height:1.2;margin-top:2px;letter-spacing:-.02em}
+.live{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--warn)}
+.live.on::before{background:var(--ok)}
+.switch{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink2);font-weight:500;cursor:pointer}
+
+/* Workspace Content */
+.content{padding:22px 26px 70px;max-width:1280px;width:100%}
+.board-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.board-head h2{font-size:20px;font-weight:700;margin:0;letter-spacing:-.02em}
+
+/* Tabs & Search */
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 auto}
+.tab{padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink2);font:600 13px "DM Sans",sans-serif;cursor:pointer}
+.tab[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tab em{font-style:normal;opacity:.75;margin-left:5px}
+.search{flex:0 1 230px;margin:0;padding:8px 13px;border:1px solid var(--line);border-radius:999px;font:inherit;font-size:13.5px;background:#fff;color:var(--ink)}
+.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+
+/* 3-Column Live Kanban Board matching Mockup */
+.kanban{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start}
+.kcol{
+  background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--line);
+  border-radius:14px;padding:14px;min-height:260px;
+}
+.kcol.col-warn{border-top-color:#F59E0B;background:#FFFDF7;border-color:#FDE68A}
+.kcol.col-blue{border-top-color:var(--accent);background:#F8FAFF;border-color:#DBEAFE}
+.kcol.col-ok{border-top-color:var(--ok);background:#F6FEF9;border-color:#D1FAE5}
+.kcol-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-weight:700;font-size:14.5px;color:var(--ink)}
+.kcol-head em{font-style:normal;font-size:12.5px;font-weight:700;color:var(--muted)}
+.kcol.col-warn .kcol-head em{color:var(--warn)}
+.kcol.col-blue .kcol-head em{color:var(--accent)}
+.kcol.col-ok .kcol-head em{color:var(--ok-dark)}
+.kcol-body{display:flex;flex-direction:column;gap:12px}
+.kempty{text-align:center;color:var(--muted);font-size:13px;padding:34px 10px;border:1px dashed #CBD5E1;border-radius:12px;background:rgba(255,255,255,.6)}
+
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+
+/* Order Card matching Mockup */
+.order{
+  background:#fff;border:1px solid var(--line);border-radius:13px;padding:15px;
+  display:flex;flex-direction:column;gap:9px;
+  box-shadow:0 2px 6px rgba(15,23,42,.04);
+}
+.order.delivered{opacity:.65}
+.order.fresh{animation:rise .4s var(--ease)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ticket{font-weight:700;font-size:15px;color:var(--muted);letter-spacing:-.01em}
+.pay-badge{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.pay-badge.upi{background:var(--ok);color:#fff}
+.pay-badge.cash{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn-line)}
+.file{font-weight:700;font-size:16px;word-break:break-all;line-height:1.3;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;font-weight:500;padding:2px 8px;border-radius:6px;background:var(--surface);border:1px solid var(--line);color:var(--ink2)}
+.meta{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--muted)}
+.amount{font-weight:800;font-size:16px;color:var(--ink)}
+.card-links{display:flex;justify-content:center;gap:18px;align-items:center;padding-top:2px}
+.done-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--ok-dark);font-weight:600}
+.empty{text-align:center;color:var(--muted);padding:48px 14px;border:1px dashed #CBD5E1;border-radius:16px;grid-column:1/-1;background:#fff}
+
+/* Live Printing Progress Bar */
+.prog-wrap{margin:2px 0 4px}
+.prog-txt{font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.prog-bar{width:100%;height:6px;background:#E2E8F0;border-radius:999px;overflow:hidden;position:relative}
+.prog-bar div{width:45%;height:100%;background:var(--ok);border-radius:999px;animation:slide 1.6s ease-in-out infinite}
+
+/* Buttons & Forms */
 .btn{
-  border:0;border-radius:11px;cursor:pointer;width:100%;padding:12px 16px;
-  background:var(--accent);color:#fff;font:700 14px/1.15 "Sora",system-ui,sans-serif;
+  border:0;border-radius:10px;cursor:pointer;width:100%;padding:11px 14px;
+  background:var(--accent);color:#fff;font:600 13.5px/1.15 "DM Sans",sans-serif;
   transition:background .15s,transform .15s,opacity .15s;
 }
 .btn:hover:not(:disabled){background:var(--accent-hover)}
@@ -55,177 +153,82 @@ input[type=checkbox]{accent-color:var(--accent)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn.ready{background:var(--accent)}
 .btn.done{background:var(--ok)}
-.btn.done:hover:not(:disabled){background:#047857}
-.btn.main{margin-top:18px;padding:14px;font-size:15px}
-.link{background:none;border:0;padding:3px 2px;color:var(--accent);font:600 13.5px "DM Sans",sans-serif;cursor:pointer;text-decoration:none}
-.link:hover{text-decoration:underline}
-.msg{font-size:13.5px;min-height:1.2em;margin:10px 0 0;color:var(--bad);font-weight:500}.msg.ok{color:var(--ok)}
+.btn.done:hover:not(:disabled){background:var(--ok-dark)}
+.btn.main{margin-top:16px;padding:13px;font-size:15px}
+.link{background:none;border:0;padding:2px;color:var(--muted);font:600 13px "DM Sans",sans-serif;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.link:hover{color:var(--accent)}
+.msg{font-size:13.5px;min-height:1.2em;margin:10px 0 0;color:var(--bad);font-weight:500}.msg.ok{color:var(--ok-dark)}
 
-.toggle{position:relative;width:44px;height:25px;flex:none;display:inline-block}
+.f{display:block;margin-top:13px;font-size:13px;font-weight:600;color:var(--ink2)}
+.f input,.f select{display:block;width:100%;margin-top:6px;padding:10px 13px;font:inherit;font-size:14.5px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+.f input:focus,.f select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+input[type=checkbox]{accent-color:var(--accent)}
+.toggle{position:relative;width:42px;height:24px;flex:none;display:inline-block}
 .toggle input{opacity:0;width:0;height:0;position:absolute}
 .toggle span{position:absolute;inset:0;background:#CBD5E1;border-radius:999px;transition:background .25s;cursor:pointer}
-.toggle span::after{content:"";position:absolute;left:3px;top:3px;width:19px;height:19px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .3s var(--spring)}
+.toggle span::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .3s var(--spring)}
 .toggle input:checked+span{background:var(--accent)}
-.toggle input:checked+span::after{transform:translateX(19px)}
+.toggle input:checked+span::after{transform:translateX(18px)}
 
-/* Auth & Center Views */
-.auth{max-width:420px;margin:0 auto;padding:10vh 18px 48px;animation:rise .45s var(--ease) both}
-.auth-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;margin-top:20px;box-shadow:0 12px 32px -16px rgba(15,23,42,.12)}
-.authtabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:6px}
-.authtab{flex:1;padding:9px;background:none;border:0;border-radius:9px;font:600 14px "DM Sans",sans-serif;color:var(--muted);cursor:pointer;transition:all .2s}
+/* Settings Pane */
+.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.scard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+.scard h3{margin:0 0 4px;font:700 16px "Sora",sans-serif;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rategrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 14px;margin-top:8px}
+.rategrid .btn{grid-column:1/-1;width:auto;justify-self:start;padding:10px 20px}
+.banner{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:11px 16px;margin-bottom:14px;border-radius:12px;font-size:13.5px;background:#fff;border:1px solid var(--line);color:var(--ink2)}
+.banner.low{border-color:var(--warn-line);background:var(--warn-soft)}
+#usageFill{transition:width .7s var(--ease)}
+
+/* Auth & Plans Modal */
+.auth{max-width:410px;margin:0 auto;padding:10vh 18px 48px}
+.auth-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px;margin-top:18px;box-shadow:0 12px 32px -16px rgba(15,23,42,.12)}
+.authtabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:4px;margin-bottom:6px}
+.authtab{flex:1;padding:9px;background:none;border:0;border-radius:8px;font:600 13.5px "DM Sans",sans-serif;color:var(--muted);cursor:pointer}
 .authtab[aria-selected=true]{background:var(--accent);color:#fff}
 .pw{position:relative;display:block}
 .pw button{position:absolute;right:8px;bottom:8px;padding:5px 9px;border:0;border-radius:8px;background:transparent;color:var(--accent);font:600 12.5px "DM Sans",sans-serif;cursor:pointer}
 .pw input{padding-right:76px}
 .info{color:var(--muted);font-size:13px;margin:12px 0 0}
 .center{text-align:center;max-width:440px;margin:0 auto;padding:18vh 18px}
-.center h2{font-size:24px;margin:0 0 8px}
-.center .btn{margin-top:14px}
+.center h2{font-size:23px;margin:0 0 8px}
 
-/* Top Header */
-header{
-  display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;
-  background:var(--card);border:1px solid var(--line);border-radius:18px;
-  padding:16px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(15,23,42,.04);
-}
-.brand-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.brand-mark{
-  width:38px;height:38px;border-radius:11px;background:var(--accent);color:#fff;
-  display:grid;place-items:center;flex:none;
-}
-.brand-mark svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.shop{font-weight:700;font-size:21px;line-height:1.15;margin:0;letter-spacing:-.025em;color:var(--ink)}
-.shop span{color:var(--accent)}
-.head-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.agent-pill{
-  display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;
-  padding:5px 12px;border-radius:999px;white-space:nowrap;
-}
-.agent-pill::before{content:"";width:7px;height:7px;border-radius:50%;flex:none}
-.agent-pill.on{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok-line)}
-.agent-pill.on::before{background:var(--ok);animation:ping 1.8s infinite}
-.agent-pill.off{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn-line)}
-.agent-pill.off::before{background:var(--warn)}
-.live{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
-.live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--warn)}
-.live.on::before{background:var(--ok)}
-.switch{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink2);font-weight:500;cursor:pointer}
-.logout{padding:7px 14px;border:1px solid #CBD5E1;border-radius:10px;background:#fff;color:var(--ink2);font:600 13.5px "DM Sans",sans-serif;cursor:pointer}
-.logout:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
-
-/* Banners & Settings Accordions */
-.banner{
-  display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
-  padding:11px 16px;margin-bottom:12px;border-radius:13px;font-size:13.5px;
-  background:var(--card);border:1px solid var(--line);color:var(--ink2);
-}
-.banner.low{border-color:var(--warn-line);background:var(--warn-soft)}
-#usageFill{transition:width .7s var(--ease)}
-
-.settings-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
-details.rates{
-  background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 16px;
-  box-shadow:0 1px 2px rgba(15,23,42,.03);
-}
-details.rates[open]{grid-column:1/-1;border-color:var(--accent-line)}
-details>summary{cursor:pointer;font-weight:600;font-size:14px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--ink)}
-details>summary::-webkit-details-marker{display:none}
-details>summary::after{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .25s;flex:none}
-details[open]>summary::after{transform:rotate(225deg);border-color:var(--accent)}
-.rategrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 14px;margin-top:8px}
-.rategrid .btn{grid-column:1/-1;width:auto;justify-self:start;padding:10px 20px}
-
-/* KPI Stats */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:0 0 18px}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 18px;box-shadow:0 1px 2px rgba(15,23,42,.03)}
-.stat small{color:var(--muted);font-size:12.5px;font-weight:600}
-.stat b{display:block;font-weight:800;font-size:28px;line-height:1.2;letter-spacing:-.03em;margin-top:4px;color:var(--ink)}
-.stat:nth-child(2) b{color:var(--accent)}
-.stat:nth-child(3) b{color:var(--ok)}
-
-/* Tabs & Search Bar */
-.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
-.tabs{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 auto}
-.tab{
-  padding:8px 13px;border:1px solid var(--line);border-radius:999px;background:var(--card);
-  color:var(--ink2);font:600 13.5px "DM Sans",sans-serif;cursor:pointer;transition:all .2s;
-}
-.tab:hover{border-color:#CBD5E1;color:var(--ink)}
-.tab[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
-.tab em{font-style:normal;opacity:.75;margin-left:5px}
-.search{flex:0 1 240px;margin:0;padding:9px 14px;border-radius:999px;font-size:14px;background:var(--card)}
-
-/* 3-Column Live Kanban Board (Desktop) */
-.kanban{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
-.kcol{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--line);border-radius:16px;padding:14px;min-height:240px}
-.kcol.col-warn{border-top-color:#F59E0B}
-.kcol.col-blue{border-top-color:var(--accent)}
-.kcol.col-ok{border-top-color:var(--ok)}
-.kcol-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-weight:700;font-size:14px;color:var(--ink)}
-.kcol-head em{font-style:normal;font-size:12px;padding:2px 9px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--muted)}
-.kcol-body{display:flex;flex-direction:column;gap:12px}
-.kempty{text-align:center;color:var(--muted);font-size:13px;padding:34px 10px;border:1px dashed #CBD5E1;border-radius:12px}
-
-/* Grid List View (Tabs / Search) */
-.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-
-/* Order Card */
-.order{
-  background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;
-  display:flex;flex-direction:column;gap:10px;
-  box-shadow:0 1px 3px rgba(15,23,42,.04);transition:border-color .2s,transform .2s;
-}
-.order:hover{border-color:#CBD5E1}
-.order.delivered{opacity:.65}
-.order.fresh{animation:rise .45s var(--ease)}
-.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.ticket{font-weight:800;font-size:24px;line-height:1;letter-spacing:-.03em;color:var(--ink)}
-.pay-badge{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
-.pay-badge.upi{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok-line)}
-.pay-badge.cash{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn-line)}
-.file{font-weight:600;font-size:14.5px;word-break:break-all;line-height:1.35;color:var(--ink)}
-.chips{display:flex;flex-wrap:wrap;gap:5px}
-.chip{font-size:12px;font-weight:500;padding:3px 9px;border-radius:8px;background:var(--surface);border:1px solid var(--line);color:var(--ink2)}
-.meta{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
-.amount{font-weight:800;font-size:18px;color:var(--ink)}
-.card-links{display:flex;gap:14px;align-items:center}
-.done-row{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--ok);font-weight:600}
-.empty{text-align:center;color:var(--muted);padding:48px 14px;border:1px dashed #CBD5E1;border-radius:16px;grid-column:1/-1;background:var(--card)}
-
-/* Plans Modal (Light Mode) */
 #planPay a[href^="upi"]{background:var(--accent)!important;color:#fff!important}
 #planPay a[href^="https://wa.me"]{background:var(--surface)!important;color:var(--ink)!important;border:1px solid var(--line)}
-.pm{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(15,23,42,.5);backdrop-filter:blur(6px)}
-.pm-sheet{position:relative;width:100%;max-width:460px;max-height:92vh;overflow-y:auto;background:#fff;border:1px solid var(--line);border-radius:24px 24px 0 0;padding:22px 0 26px}
+.pm{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.5);backdrop-filter:blur(6px);padding:16px}
+.pm-sheet{position:relative;width:100%;max-width:960px;max-height:92vh;overflow-y:auto;background:#fff;border:1px solid var(--line);border-radius:22px;padding:24px 0 26px}
 .pm-x{position:absolute;top:14px;left:14px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:20px;line-height:1;cursor:pointer}
-.pm-dots{display:flex;justify-content:center;gap:6px;height:8px;margin:8px 0 14px}
-.pm-dots i{width:6px;height:6px;border-radius:99px;background:#CBD5E1}
-.pm-dots i.on{width:20px;background:var(--accent)}
+.pm-dots{display:none}
 .pm-head{padding:0 24px 14px;text-align:center}
 .pm-head h2{font-size:20px;margin:0}
-.pm-track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 8% 10px;scrollbar-width:none}
-.pm-track::-webkit-scrollbar{display:none}
-.pm-card{flex:0 0 84%;scroll-snap-align:center;display:flex;flex-direction:column;gap:12px;padding:20px;border-radius:18px;background:var(--surface);border:1px solid var(--line)}
+.pm-track{display:flex;gap:14px;justify-content:center;padding:6px 26px 10px;flex-wrap:wrap}
+.pm-card{flex:0 1 285px;display:flex;flex-direction:column;gap:12px;padding:20px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
 .pm-card.hot{background:var(--accent);color:#fff;border:0}
-.pm-card h3{margin:0;font:700 22px "Sora",sans-serif;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pm-card h3{margin:0;font:700 20px "Sora",sans-serif;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .pm-tag{font:600 11px "DM Sans",sans-serif;padding:3px 9px;border-radius:99px;background:#fff;color:var(--accent)}
-.pm-sub{margin:-6px 0 0;font-size:13.5px;color:var(--muted)}
-.pm-price{font:800 36px/1 "Sora",sans-serif;letter-spacing:-.04em}
-.pm-price small{font:500 13.5px "DM Sans",sans-serif;color:var(--muted);margin-left:4px}
+.pm-sub{margin:-6px 0 0;font-size:13px;color:var(--muted)}
+.pm-price{font:800 34px/1 "Sora",sans-serif;letter-spacing:-.04em}
+.pm-price small{font:500 13px "DM Sans",sans-serif;color:var(--muted);margin-left:4px}
 .pm-card.hot .pm-sub,.pm-card.hot .pm-price small,.pm-card.hot .pm-note{color:rgba(255,255,255,.8)}
-.pm-cta{display:block;width:100%;text-align:center;text-decoration:none;border:0;cursor:pointer;padding:13px;border-radius:12px;background:var(--ink);color:#fff;font:700 14px "Sora",sans-serif}
+.pm-cta{display:block;width:100%;text-align:center;text-decoration:none;border:0;cursor:pointer;padding:12px;border-radius:11px;background:var(--ink);color:#fff;font:700 14px "Sora",sans-serif}
 .pm-card.hot .pm-cta{background:#fff;color:var(--accent)}
 .pm-note{margin:-2px 0 0;font-size:12px;color:var(--muted);text-align:center}
 .pm-note a{color:inherit;text-decoration:underline}
-.pm-feats{list-style:none;margin:2px 0 0;padding:14px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:9px;font-size:13.5px}
+.pm-feats{list-style:none;margin:2px 0 0;padding:12px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px;font-size:13px}
 .pm-card.hot .pm-feats{border-top-color:rgba(255,255,255,.22)}
-.pm-feats li{display:flex;gap:9px;align-items:center}
+.pm-feats li{display:flex;gap:8px;align-items:center}
 .pm-feats li::before{content:"✓";flex:none;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center}
 .pm-card.hot .pm-feats li::before{background:#fff;color:var(--accent)}
 
-@media(min-width:760px){.pm{align-items:center}.pm-sheet{max-width:980px;border-radius:24px;padding-top:26px}.pm-dots{display:none}.pm-track{justify-content:center;padding:6px 28px 10px;overflow:visible}.pm-card{flex:0 1 300px}}
-@media(max-width:900px){.kanban{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr}}
-@media(max-width:560px){.stats{gap:8px}.stat{padding:12px}.stat b{font-size:22px}.search{flex:1 1 100%}.rategrid{grid-template-columns:1fr}}
+@media(max-width:940px){
+  .shell{grid-template-columns:1fr}
+  .rail{position:fixed;left:0;right:0;bottom:0;top:auto;height:58px;flex-direction:row;justify-content:space-around;padding:0 12px;border-right:0;border-top:1px solid var(--line)}
+  .rail-logo,.rail-spacer{display:none}
+  .topbar{padding:14px 16px}
+  .content{padding:16px 14px 82px}
+  .kanban,.settings-grid{grid-template-columns:1fr}
+}
+@media(max-width:560px){.rategrid{grid-template-columns:1fr}.search{flex:1 1 100%}}
 </style>
 </head>
 <body>
@@ -233,9 +236,10 @@ details[open]>summary::after{transform:rotate(225deg);border-color:var(--accent)
 <main class="center" id="loadView"><p class="sub">Load ho raha hai...</p></main>
 
 <main class="auth hidden" id="authView">
-  <div class="brand-row" style="justify-content:center">
-    <div class="brand-mark"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
-    <div><p class="shop">Xerox<span>Flow</span></p><p class="sub" style="margin:0">Dukaan Owner Panel</p></div>
+  <div style="text-align:center">
+    <div class="rail-logo" style="margin:0 auto 10px"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
+    <p class="shop">Xerox<span>Flow</span></p>
+    <p class="sub">Dukaan Owner Panel</p>
   </div>
   <div class="auth-card">
     <button type="button" class="btn" id="googleBtn" style="background:var(--surface);color:var(--ink);border:1px solid var(--line);margin-bottom:6px">Google se continue karo</button>
@@ -306,89 +310,116 @@ details[open]>summary::after{transform:rotate(225deg);border-color:var(--accent)
   <button class="btn" id="pBtn" style="margin-top:14px">Logout</button>
 </main>
 
-<div class="wrap hidden" id="appView">
+<div class="shell hidden" id="appView">
   <div class="hidden" id="bfBar"><div class="bf-t"></div><button id="bfGo" type="button"></button></div>
-  <header>
-    <div class="brand-row">
-      <div class="brand-mark"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
-      <div>
-        <p class="shop" id="shopName"></p>
-        <p class="sub" id="shopMeta"></p>
-      </div>
-      <span class="agent-pill off" id="headAgent">Agent Offline</span>
+  <aside class="rail" aria-label="Navigation">
+    <div class="rail-logo" title="XeroxFlow">
+      <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
     </div>
-    <div class="head-tools">
-      <span class="live" id="live">Connecting...</span>
-      <label class="switch">
-        <span class="toggle"><input type="checkbox" id="sound" checked><span></span></span>
-        Awaaz
-      </label>
-      <button class="logout" id="logout">Logout</button>
-    </div>
-  </header>
+    <button class="rail-btn active" id="navBoard" title="Live Kanban Board" type="button">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+    </button>
+    <button class="rail-btn" id="navSearch" title="Search Orders" type="button">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+    <button class="rail-btn" id="navSettings" title="Printers, QR &amp; Rates" type="button">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+    <div class="rail-spacer"></div>
+    <button class="rail-btn" id="logout" title="Logout" type="button">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </aside>
 
-  <div class="stats" aria-live="polite">
-    <div class="stat"><small>Aaj ke orders</small><b id="stOrders">0</b></div>
-    <div class="stat"><small>Aaj ki kamai</small><b id="stMoney">₹0</b></div>
-    <div class="stat"><small>Active queue</small><b id="stPending">0</b></div>
-  </div>
-
-  <div class="banner hidden" id="trialBanner"><span id="trialText"></span><button class="link" id="openPlans" type="button">Plans dekho</button></div>
-  <div class="banner" id="usageBox"><span id="usageText"></span><div style="width:100%;height:6px;background:var(--line);border-radius:6px;overflow:hidden"><div id="usageFill" style="height:100%;width:0"></div></div></div>
-
-  <div class="settings-grid">
-    <details class="rates" id="printerBox">
-      <summary>Printer settings &amp; Auto-Print <span id="agentPill" class="agent-pill off" style="margin-left:auto">Agent Offline</span></summary>
-      <form id="printerForm" class="rategrid" novalidate>
-        <label class="f">B&amp;W A4 Printer<select id="p_bw_a4"><option value="">Default Windows Printer</option></select></label>
-        <label class="f">Colour A4 Printer<select id="p_c_a4"><option value="">Default Windows Printer</option></select></label>
-        <label class="f">A3 Printer (optional)<select id="p_a3"><option value="">None / Default Printer</option></select></label>
-        <label class="f" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:18px">
-          <span>Auto-Duplex (dono taraf khud print)</span>
-          <span class="toggle"><input type="checkbox" id="p_duplex" checked><span></span></span>
-        </label>
-        <div style="grid-column:1/-1;margin-top:8px;padding-top:10px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">
-          <span class="sub" style="margin:0">Print Agent Token: <code id="agentTok" style="color:var(--ink);font-weight:600">••••••••</code></span>
-          <span style="display:flex;gap:12px">
-            <button type="button" class="link" id="toggleTok">Dikhao</button>
-            <button type="button" class="link" id="copyTok">Token copy karo</button>
-          </span>
+  <div class="main">
+    <header class="topbar">
+      <div class="top-left">
+        <div>
+          <p class="shop" id="shopName"></p>
+          <p class="sub" id="shopMeta"></p>
         </div>
-        <button class="btn" type="submit" style="margin-top:10px">Printer settings save karo</button>
-        <p class="msg" id="printerMsg" style="grid-column:1/-1;margin:0"></p>
-      </form>
-    </details>
-
-    <details class="rates">
-      <summary>Customer QR &amp; Link</summary>
-      <div style="text-align:center;padding:12px 0">
-        <div id="qr" style="display:inline-block;background:#fff;padding:10px;border:1px solid var(--line);border-radius:12px"></div>
-        <p class="sub" id="custLink" style="word-break:break-all;margin:10px 0"></p>
-        <button class="btn" id="copyLink" style="width:auto;padding:10px 18px">Link copy karo</button>
+        <span class="agent-pill off" id="headAgent">Agent Offline</span>
       </div>
-    </details>
+      <div class="top-right" aria-live="polite">
+        <div class="kpi"><small>Today's Orders</small><b id="stOrders">0</b></div>
+        <div class="kpi"><small>Today's Earnings</small><b id="stMoney">₹0</b></div>
+        <div class="kpi"><small>Active Queue</small><b id="stPending">0</b></div>
+        <span class="live" id="live">Connecting...</span>
+        <label class="switch">
+          <span class="toggle"><input type="checkbox" id="sound" checked><span></span></span>
+          Awaaz
+        </label>
+      </div>
+    </header>
 
-    <details class="rates">
-      <summary>Rates badlein (₹ per sheet)</summary>
-      <form id="rateForm" class="rategrid" novalidate>
-        <label class="f">B&amp;W A4<input type="number" id="r_bw_a4" min="0" step="0.5"></label>
-        <label class="f">B&amp;W A3<input type="number" id="r_bw_a3" min="0" step="0.5"></label>
-        <label class="f">Colour A4<input type="number" id="r_c_a4" min="0" step="0.5"></label>
-        <label class="f">Colour A3<input type="number" id="r_c_a3" min="0" step="0.5"></label>
-        <button class="btn" type="submit">Rates save karo</button>
-        <p class="msg" id="rateMsg" style="grid-column:1/-1;margin:0"></p>
-      </form>
-    </details>
+    <main class="content">
+      <div id="boardPane">
+        <div class="board-head">
+          <h2>Live Kanban Board</h2>
+          <input class="search" id="search" type="search" placeholder="Ticket # ya file naam..." aria-label="Search orders">
+        </div>
+        <div class="bar"><div class="tabs" id="tabs" role="group" aria-label="Order status"></div></div>
+        <div class="kanban" id="list"></div>
+      </div>
 
-    <details class="rates"><summary>Subscription &amp; Payment</summary><div id="planPay" style="padding:10px 0"></div></details>
+      <div id="settingsPane" class="hidden">
+        <div class="banner hidden" id="trialBanner"><span id="trialText"></span><button class="link" id="openPlans" type="button">Plans dekho</button></div>
+        <div class="banner" id="usageBox"><span id="usageText"></span><div style="width:100%;height:6px;background:var(--line);border-radius:6px;overflow:hidden"><div id="usageFill" style="height:100%;width:0"></div></div></div>
+
+        <div class="settings-grid">
+          <div class="scard" id="printerBox">
+            <h3>Printer Settings &amp; Auto-Print <span id="agentPill" class="agent-pill off">Agent Offline</span></h3>
+            <p class="sub">Apne PC ke installed printers yahan map karein.</p>
+            <form id="printerForm" class="rategrid" novalidate>
+              <label class="f">B&amp;W A4 Printer<select id="p_bw_a4"><option value="">Default Windows Printer</option></select></label>
+              <label class="f">Colour A4 Printer<select id="p_c_a4"><option value="">Default Windows Printer</option></select></label>
+              <label class="f">A3 Printer (optional)<select id="p_a3"><option value="">None / Default Printer</option></select></label>
+              <label class="f" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:18px">
+                <span>Auto-Duplex</span>
+                <span class="toggle"><input type="checkbox" id="p_duplex" checked><span></span></span>
+              </label>
+              <div style="grid-column:1/-1;margin-top:8px;padding-top:10px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">
+                <span class="sub" style="margin:0">Agent Token: <code id="agentTok" style="color:var(--ink);font-weight:600">••••••••</code></span>
+                <span style="display:flex;gap:12px">
+                  <button type="button" class="link" id="toggleTok">Dikhao</button>
+                  <button type="button" class="link" id="copyTok">Copy karo</button>
+                </span>
+              </div>
+              <button class="btn" type="submit" style="margin-top:10px">Save Printer Settings</button>
+              <p class="msg" id="printerMsg" style="grid-column:1/-1;margin:0"></p>
+            </form>
+          </div>
+
+          <div class="scard">
+            <h3>Customer QR &amp; Link</h3>
+            <p class="sub">Counter par lagane ke liye QR code aur shareable link.</p>
+            <div style="text-align:center;padding:14px 0 4px">
+              <div id="qr" style="display:inline-block;background:#fff;padding:10px;border:1px solid var(--line);border-radius:12px"></div>
+              <p class="sub" id="custLink" style="word-break:break-all;margin:10px 0"></p>
+              <button class="btn" id="copyLink" style="width:auto;padding:10px 18px">Link copy karo</button>
+            </div>
+          </div>
+
+          <div class="scard">
+            <h3>Rates (₹ per sheet)</h3>
+            <form id="rateForm" class="rategrid" novalidate>
+              <label class="f">B&amp;W A4<input type="number" id="r_bw_a4" min="0" step="0.5"></label>
+              <label class="f">B&amp;W A3<input type="number" id="r_bw_a3" min="0" step="0.5"></label>
+              <label class="f">Colour A4<input type="number" id="r_c_a4" min="0" step="0.5"></label>
+              <label class="f">Colour A3<input type="number" id="r_c_a3" min="0" step="0.5"></label>
+              <button class="btn" type="submit">Rates save karo</button>
+              <p class="msg" id="rateMsg" style="grid-column:1/-1;margin:0"></p>
+            </form>
+          </div>
+
+          <div class="scard">
+            <h3>Subscription &amp; Payment</h3>
+            <div id="planPay" style="padding-top:10px"></div>
+          </div>
+        </div>
+      </div>
+    </main>
   </div>
-
-  <div class="bar">
-    <div class="tabs" id="tabs" role="group" aria-label="Order status"></div>
-    <input class="search" id="search" type="search" placeholder="Ticket no. ya file naam" aria-label="Search orders">
-  </div>
-
-  <div class="kanban" id="list"></div>
 </div>
 
 <div class="pm hidden" id="plansModal" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
@@ -1062,8 +1093,9 @@ function orderCardHTML(o) {
       <div class="file">${esc(o.file_name)}</div>
       <div class="chips">${chips}</div>
       <div class="meta"><span>${o.pages} pg · ${o.sheets} sh · ${fmtTime(o.created_at)}</span><span class="amount">₹${Number(o.amount)}</span></div>
-      ${o.file_path ? `<div class="card-links"><button class="link" data-a="file" data-id="${o.id}">File kholo ↗</button>${(o.status === 'ready' || o.status === 'printing') ? `<button class="link" data-a="autoprint" data-id="${o.id}">Dobara Print ↻</button>` : ''}</div>` : ''}
+      ${o.status === 'printing' ? `<div class="prog-wrap"><div class="prog-txt">Live printing in progress...</div><div class="prog-bar"><div></div></div></div>` : ''}
       ${actionHTML(o)}
+      ${o.file_path ? `<div class="card-links"><button class="link" data-a="file" data-id="${o.id}">File kholo ↗</button>${(o.status === 'ready' || o.status === 'printing') ? `<button class="link" data-a="autoprint" data-id="${o.id}">Reprint ↻</button>` : ''}</div>` : ''}
     </article>`;
 }
 function renderList() {
@@ -1104,6 +1136,18 @@ function renderList() {
 }
 function render() { renderStats(); renderTabs(); renderList(); }
 $('search').addEventListener('input', e => { query = e.target.value; renderList(); });
+
+
+/* ---------- Sidebar Navigation (Board vs Settings) ---------- */
+function setOwnerPane(pane) {
+  $('boardPane').classList.toggle('hidden', pane !== 'board');
+  $('settingsPane').classList.toggle('hidden', pane !== 'settings');
+  $('navBoard').classList.toggle('active', pane === 'board');
+  $('navSettings').classList.toggle('active', pane === 'settings');
+}
+$('navBoard').addEventListener('click', () => { setOwnerPane('board'); filter = 'board'; render(); });
+$('navSearch').addEventListener('click', () => { setOwnerPane('board'); filter = 'all'; render(); $('search').focus(); });
+$('navSettings').addEventListener('click', () => setOwnerPane('settings'));
 
 /* ---------- Start ---------- */
 (async () => {
